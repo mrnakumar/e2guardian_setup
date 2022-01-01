@@ -25,3 +25,6 @@ sudo make install || exit
 # Make e2guardian run on boot
 sudo cp ./data/scripts/e2guardian.service /etc/systemd/system/
 sudo systemctl enable e2guardian
+
+# Configure iptables to make sure access is only via e2guardian
+./iptables.sh
