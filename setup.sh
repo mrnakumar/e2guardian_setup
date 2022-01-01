@@ -22,6 +22,9 @@ sudo ./configure '--prefix=/usr' '--enable-clamd=yes' '--with-proxyuser=e2guardi
 sudo make || exit
 sudo make install || exit
 
+# Configure log rotate
+./add_logrotate.sh
+
 # Make e2guardian run on boot
 sudo cp ./data/scripts/e2guardian.service /etc/systemd/system/
 sudo systemctl enable e2guardian
