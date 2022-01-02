@@ -1,3 +1,4 @@
+#!/bin/sh
 ###
 # This file can be used to install e2guardian.
 ###
