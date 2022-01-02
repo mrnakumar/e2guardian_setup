@@ -40,7 +40,6 @@ def main():
         msg =  create_message(from, to, 'TEST FROM MAILER', 'MAIler test')
         send_message(service, 'me', msg)
     except HttpError as error:
-        # TODO(developer) - Handle errors from gmail API.
         print(f'An error occurred: {error}')
 
 def send_message(service, user_id, message):
@@ -59,8 +58,8 @@ def send_message(service, user_id, message):
     message = (service.users().messages().send(userId=user_id, body=message)
                .execute())
     return message
-  except:
-    print('An error occurred:')
+  except Exception as e:
+    print(f'An error occurred: {e}')
 
 def create_message(sender, to, subject, message_text):
   """Create a message for an email.
