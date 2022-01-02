@@ -7,7 +7,7 @@ echo "Adding user e2guardian..."
 useradd -m e2guardian
 
 echo "Installing e2guardian..."
-./install.sh
+./install_requirements.sh
 
 # Download e2guardian
 wget https://github.com/e2guardian/e2guardian/archive/refs/heads/v5.4.zip || exit
