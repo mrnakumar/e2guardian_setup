@@ -22,6 +22,12 @@ sudo ./configure '--prefix=/usr' '--enable-clamd=yes' '--with-proxyuser=e2guardi
 sudo make || exit
 sudo make install || exit
 
+# Copy files for group1
+./group1_setup.sh
+
+
+
+## Operations stuff
 # Configure log rotate
 ./add_logrotate.sh
 
