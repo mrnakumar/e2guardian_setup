@@ -23,7 +23,7 @@ touch ${LOCKFILE}
 
 # Business logic starts...
 chromeHistoryBasePath="/etc/infinity/chrome_history"
-cd ${chromeHistoryBasePath}
+cd ${chromeHistoryBasePath} || { echo "Could not cd into ${chromeHistoryBasePath}. Exiting"; exit; }
 source "./venv/bin/activate" || { echo "Could not activate python venv.";  exit; }
 ENCRYPT_UTIL="./encrypt_decrypt.py"
 MAILER_UTIL="./mailer.py"
@@ -34,7 +34,7 @@ cp ${historyFilePath} ./${historyFileName}
 day=$(date +%d)
 recordsFilePrefix="records_"
 recordFile="${recordsFilePrefix}${day}"
-if [ ! -f $recordFile ]; then
+if [ ! -f "$recordFile" ]; then
     # Check if previous day's record exist. If yes, then share those.
     for fileName in `ls -d ${recordsFilePrefix}*`; do
         filePath="${PWD}/${fileName}"
@@ -52,7 +52,7 @@ if [ ! -f $recordFile ]; then
 	    python ${MAILER_UTIL} "${fromAddr}" "${toAddr}" "GChrme Records ${recordFile}" "${encryptedFilePath}"
 	    rm -f "$encryptedFilePath" || { echo "Failed to delete ${encryptedFilePath}, exiting."; exit; }
 	fi
-        rm -f $filePath
+        rm -f "$filePath"
     done
 
     touch "${recordFile}" || { echo "Failed to create records file ${recordFile}"; exit; }
