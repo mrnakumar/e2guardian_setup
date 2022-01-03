@@ -24,15 +24,14 @@ touch ${LOCKFILE}
 # Business logic starts...
 chromeHistoryBasePath="/etc/infinity/chrome_history"
 cd ${chromeHistoryBasePath}
-PYTHON_VENV_ACTIVATE="./venv/bin/activate"
-source ${PYTHON_VENV_ACTIVATE} || { echo "Could not activate python venv.";  exit; }
+source "./venv/bin/activate" || { echo "Could not activate python venv.";  exit; }
 ENCRYPT_UTIL="./encrypt_decrypt.py"
 MAILER_UTIL="./mailer.py"
 query="SELECT urls.url, urls.visit_count, urls.last_visit_time FROM urls;"
 historyFileName="History"
 historyFilePath="/home/infinity/.config/google-chrome/Default/${historyFileName}"
 cp ${historyFilePath} ./${historyFileName}
-day=`date +%d`
+day=$(date +%d)
 recordsFilePrefix="records_"
 recordFile="${recordsFilePrefix}${day}"
 if [ ! -f $recordFile ]; then
@@ -44,21 +43,21 @@ if [ ! -f $recordFile ]; then
 	# First: encrypt, and then send
 	python ${ENCRYPT_UTIL} "${ecKey}" "encrypt" "$filePath"
 	encryptedFilePath="${filePath}.ec"
-        if [ ! -f $encryptedFilePath ]; then
+        if [ ! -f "$encryptedFilePath" ]; then
 	    echo "Unknown error. Skipping sync of ${filePath}"
 	    continue
 	else
 	    # Send the encrypted file and then delete it.
 	    echo "Sending file ${encryptedFilePath} ..."
 	    python ${MAILER_UTIL} "${fromAddr}" "${toAddr}" "GChrme Records ${recordFile}" "${encryptedFilePath}"
-	    rm -f $encryptedFilePath || { echo "Failed to delete ${encryptedFilePath}, exiting."; exit; }
+	    rm -f "$encryptedFilePath" || { echo "Failed to delete ${encryptedFilePath}, exiting."; exit; }
 	fi
         rm -f $filePath
     done
 
-    touch ${recordFile} || { echo "Failed to create records file ${recordFile}"; exit; }
+    touch "${recordFile}" || { echo "Failed to create records file ${recordFile}"; exit; }
 fi
-sqlite3 ${historyFilePath} "${query}" >> ${recordFile}
+sqlite3 ${historyFilePath} "${query}" >> "${recordFile}"
 
 # Business logic ends here
 
