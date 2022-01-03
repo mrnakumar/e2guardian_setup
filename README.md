@@ -7,3 +7,14 @@ pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-
 
 ### To use encrypt_decrupt install the following python packages:
 pip install pycryptodome
+
+### Using encrypter_decrypter
+#### To encrypt a file named `iptables.service` in current working directory:
+```shell
+python encrypt_decrypt.py "mysimplekey" "encrypt" "./iptables.service"
+```
+
+#### To decrypt a file named `iptables.service.ec` in current working directory:
+```shell
+python encrypt_decrypt.py "mysimplekey" "decrypt" "./iptables.service.ec"
+```
