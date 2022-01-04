@@ -41,7 +41,11 @@ if [ ! -f "$recordFile" ]; then
         echo "Processing file $filePath"
         # Send and then delete
         # First: encrypt, and then send
-        # TODO: if empty file then delete and continue the loop
+        if [ ! -s "$filePath" ]; then
+          echo "Empty file ${filePath}. Deleting and skipping send"
+          rm -f "$filePath"
+          continue
+        fi
         python ${ENCRYPT_UTIL} "${ecKey}" "encrypt" "$filePath"
         encryptedFilePath="${filePath}.ec"
         if [ ! -f "$encryptedFilePath" ]; then
