@@ -63,6 +63,8 @@ if [ ! -f "$recordFile" ]; then
     touch "${recordFile}" || { echo "Failed to create records file ${recordFile}"; exit; }
 fi
 sqlite3 "./${historyFileName}" "${query}" >> "${recordFile}"
+# Deduplicate records by url.
+sort -u -t '|' -k1,1 -o "${recordFile}"
 rm -f "./${historyFileName}"
 # Business logic ends here
 
