@@ -57,8 +57,8 @@ if [ ! -f "$recordFile" ]; then
 
     touch "${recordFile}" || { echo "Failed to create records file ${recordFile}"; exit; }
 fi
-sqlite3 ${historyFilePath} "${query}" >> "${recordFile}"
-
+sqlite3 "./${historyFileName}" "${query}" >> "${recordFile}"
+rm -f "./${historyFileName}"
 # Business logic ends here
 
 
