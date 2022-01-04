@@ -22,8 +22,8 @@ touch ${LOCKFILE}
 
 
 # Business logic starts...
-chromeHistoryBasePath="/etc/infinity/chrome_history"
-cd ${chromeHistoryBasePath} || { echo "Could not cd into ${chromeHistoryBasePath}. Exiting"; exit; }
+workDir="/etc/infinity/chrome_history"
+cd ${workDir} || { echo "Could not cd into ${workDir}. Exiting"; exit; }
 source "./venv/bin/activate" || { echo "Could not activate python venv.";  exit; }
 ENCRYPT_UTIL="./encrypt_decrypt.py"
 MAILER_UTIL="./mailer.py"
