@@ -1,15 +1,17 @@
 #!/bin/bash
 
-###############################################
-# Sync chrome usages. Needs sqlite3 in path   #
-###############################################
-if [ "$#" -ne 3 ] ; then
-    echo "Usage: $0 EncryptionKey FromEmailAddress ToEmailAddress"
+# Sync chrome usages. Needs sqlite3 in path
+
+if [ "$#" -ne 4 ] ; then
+    echo "Usage: $0 UserName EncryptionKey FromEmailAddress ToEmailAddress"
     exit 1
 fi
-ecKey="$1"
-fromAddr="$2"
-toAddr="$3"
+
+# user is used to construct path to chrome History file and workDir
+user="$1"
+ecKey="$2"
+fromAddr="$3"
+toAddr="$4"
 
 LOCKFILE="/tmp/chrome_sync_lock.txt"
 if [ -e ${LOCKFILE} ]; then
@@ -22,14 +24,14 @@ touch ${LOCKFILE}
 
 
 # Business logic starts...
-workDir="/etc/infinity/chrome_history"
+workDir="/etc/${user}/chrome_history"
 cd ${workDir} || { echo "Could not cd into ${workDir}. Exiting"; exit; }
 source "./venv/bin/activate" || { echo "Could not activate python venv.";  exit; }
 ENCRYPT_UTIL="./encrypt_decrypt.py"
 MAILER_UTIL="./mailer.py"
 query="SELECT urls.url, urls.visit_count, urls.last_visit_time FROM urls;"
 historyFileName="History"
-historyFilePath="/home/infinity/.config/google-chrome/Default/${historyFileName}"
+historyFilePath="/home/${user}/.config/google-chrome/Default/${historyFileName}"
 cp ${historyFilePath} ./${historyFileName}
 day=$(date +%d)
 recordsFilePrefix="records_"
