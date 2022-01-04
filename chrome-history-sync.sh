@@ -4,8 +4,8 @@
 # Sync chrome usages. Needs sqlite3 in path   #
 ###############################################
 if [ "$#" -ne 3 ] ; then
-  echo "Usage: $0 EncryptionKey FromEmailAddress ToEmailAddress"
-  exit 1
+    echo "Usage: $0 EncryptionKey FromEmailAddress ToEmailAddress"
+    exit 1
 fi
 ecKey="$1"
 fromAddr="$2"
@@ -38,20 +38,20 @@ if [ ! -f "$recordFile" ]; then
     # Check if previous day's record exist. If yes, then share those.
     for fileName in `ls -d ${recordsFilePrefix}*`; do
         filePath="${PWD}/${fileName}"
-	echo "Processing file $filePath"
-	# Send and then delete
-	# First: encrypt, and then send
-	python ${ENCRYPT_UTIL} "${ecKey}" "encrypt" "$filePath"
-	encryptedFilePath="${filePath}.ec"
+        echo "Processing file $filePath"
+        # Send and then delete
+        # First: encrypt, and then send
+        python ${ENCRYPT_UTIL} "${ecKey}" "encrypt" "$filePath"
+        encryptedFilePath="${filePath}.ec"
         if [ ! -f "$encryptedFilePath" ]; then
-	    echo "Unknown error. Skipping sync of ${filePath}"
-	    continue
-	else
-	    # Send the encrypted file and then delete it.
-	    echo "Sending file ${encryptedFilePath} ..."
-	    python ${MAILER_UTIL} "${fromAddr}" "${toAddr}" "GChrme Records ${recordFile}" "${encryptedFilePath}"
-	    rm -f "$encryptedFilePath" || { echo "Failed to delete ${encryptedFilePath}, exiting."; exit; }
-	fi
+            echo "Unknown error. Skipping sync of ${filePath}"
+            continue
+        else
+            # Send the encrypted file and then delete it.
+            echo "Sending file ${encryptedFilePath} ..."
+            python ${MAILER_UTIL} "${fromAddr}" "${toAddr}" "GChrme Records ${recordFile}" "${encryptedFilePath}"
+            rm -f "$encryptedFilePath" || { echo "Failed to delete ${encryptedFilePath}, exiting."; exit; }
+        fi
         rm -f "$filePath"
     done
 
