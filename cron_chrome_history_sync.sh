@@ -69,14 +69,14 @@ function sync_chrome_history() {
 
     # Business logic starts...
     workDir="/etc/${user}/chrome_history"
-    cd ${workDir} || { echo "Could not cd into ${workDir}. Exiting"; exit; }
+    cd "${workDir}" || { echo "Could not cd into ${workDir}. Exiting"; exit; }
     source "./venv/bin/activate" || { echo "Could not activate python venv.";  exit; }
     ENCRYPT_UTIL="./encrypt_decrypt.py"
     MAILER_UTIL="./mailer.py"
     query="SELECT urls.url, urls.visit_count, urls.last_visit_time FROM urls;"
     historyFileName="History"
     historyFilePath="/home/${user}/.config/google-chrome/Default/${historyFileName}"
-    cp ${historyFilePath} ./${historyFileName}
+    cp "${historyFilePath}" ./${historyFileName}
     day=$(date +%d)
     recordsFilePrefix="records_"
     recordFile="${recordsFilePrefix}${day}"
