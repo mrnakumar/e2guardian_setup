@@ -12,7 +12,14 @@
 # To check for correctness, change the cron expression to run every minutes (i.e. '* * * * *'). Revert once checked.
 
 function setup_cron_job(){
-    user="guest"
+    user="$1"
+    if id "${user}" &>/dev/null; then
+        echo "Will setup chrome sync cron job for user ${user}"
+    else
+        echo "User ${user} not found. Exiting"
+	exit 3
+    fi
+
     workDir="/etc/${user}/chrome_history"
     sudo mkdir -p "${workDir}" || { echo "Failed to create workDir. Exiting."; exit; }
     sudo cp "./mailer.py" "./encrypt_decrypt.py" "./chrome-history-sync.sh" "./requirements-for-python-code.txt" "./token.json" "${workDir}/" || { echo "Failed to copy data/program files. Exiting."; exit; }
@@ -32,6 +39,7 @@ function setup_cron_job(){
     #install new cron file
     sudo crontab -u "${user}" mycron
     rm mycron
+    echo "Successfully setup cron job for chrome history sync"
 }
 
 ##########
@@ -111,6 +119,8 @@ function sync_chrome_history() {
     rm -f ${LOCKFILE}
 }
 
+
+#--------------------------------------------------------
 # Main logic begins here. Interpret and call appropriate function.
 if [ "$#" -lt 2 ]; then
     echo "Usages: operation<setup_cron|sync_chrome> user"
