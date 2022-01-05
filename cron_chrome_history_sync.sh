@@ -17,7 +17,7 @@ function setup_cron_job(){
         echo "Will setup chrome sync cron job for user ${user}"
     else
         echo "User ${user} not found. Exiting"
-	exit 3
+	      exit 3
     fi
 
     workDir="/etc/${user}/chrome_history"
