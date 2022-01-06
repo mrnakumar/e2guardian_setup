@@ -47,6 +47,22 @@ echo "Setting up log rotation"
 sudo cp "${e2GuardianDir}/data/scripts/e2guardian.service" /etc/systemd/system/
 sudo systemctl enable e2guardian
 
+
+# Setup log rotation
+sudo mkdir -p /usr/local/share/e2guardian_log_rotate
+logRotationDir="/usr/local/share/e2guardian_log_rotate"
+sudo cp "${e2GuardianDir}/data/scripts/logrotation" "${logRotationDir}/"
+sudo chown root:root -R "${logRotationDir}"
+#write out current crontab
+sudo crontab -u root -l > mycron
+#echo new cron into cron file, runs on monday
+echo "0 15 * * 1 ${logRotationDir}/logrotation " >> mycron
+#install new cron file
+sudo crontab -u root mycron
+rm mycron
+echo "Setting up log rotation finished successfully"
+
+
 # Configure iptables to make sure access is only via e2guardian
 # TODO: setup iptables on boot. Config file can be copied from the other computer.
 ./iptables.sh
