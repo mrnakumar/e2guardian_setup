@@ -34,7 +34,7 @@ function take_screenshot {
   currentWorkingDir="${PWD}"
   cd "${screenshotsDirectoryPath}" ||  { echo "Unknown error in cd back to screenshots directory. Returning early."; return; }
   # Take screenshot using scrot utility
-  scrot
+  DISPLAY=:0 scrot
   cd "${currentWorkingDir}" || { echo "Unknown error in cd back to working directory";  }
 }
 
