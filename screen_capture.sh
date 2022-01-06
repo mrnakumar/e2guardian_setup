@@ -57,7 +57,7 @@ function screenshots {
       continue
     fi
     if [[ ${dirName} == ${screenShotDirPrefix}* ]]; then
-      if [ "${todaysShots}" != "$dirName" ]; then
+      if [ "${todaysShots}" != "${workDir}/${dirName}" ]; then
         send_screenshots "${dirName}" "${ecKey}" "${fromAddr}" "${toAddr}"
       fi
     fi
