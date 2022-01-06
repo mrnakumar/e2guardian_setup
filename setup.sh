@@ -38,10 +38,6 @@ echo "Setting up group1"
 
 
 ## Operations stuff
-# Configure log rotate
-#TODO: make logrotate size based so that cron can run more frequently and also fix path problems
-echo "Setting up log rotation"
-./add_logrotate.sh
 
 # Make e2guardian run on boot
 sudo cp "${e2GuardianDir}/data/scripts/e2guardian.service" /etc/systemd/system/
@@ -49,6 +45,8 @@ sudo systemctl enable e2guardian
 
 
 # Setup log rotation
+#TODO: make logrotate size based so that cron can run more frequently and also fix path problems
+echo "Setting up log rotation"
 sudo mkdir -p /usr/local/share/e2guardian_log_rotate
 logRotationDir="/usr/local/share/e2guardian_log_rotate"
 sudo cp "${e2GuardianDir}/data/scripts/logrotation" "${logRotationDir}/"
