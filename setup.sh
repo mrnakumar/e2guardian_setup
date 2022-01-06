@@ -17,7 +17,7 @@ done < requirements
 # Download e2guardian
 wget https://github.com/e2guardian/e2guardian/archive/refs/heads/v5.4.zip || exit
 
-unzip "e2guardian-5.4.zip" || { echo "Failed to unzip e2guardian. Exiting"; exit 1; }
+unzip "v5.4.zip" || { echo "Failed to unzip e2guardian. Exiting"; exit 1; }
 
 # Build e2guardian
 e2GuardianParentDir="${PWD}"
@@ -40,6 +40,7 @@ echo "Setting up group1"
 ## Operations stuff
 # Configure log rotate
 #TODO: make logrotate size based so that cron can run more frequently and also fix path problems
+echo "Setting up log rotation"
 ./add_logrotate.sh
 
 # Make e2guardian run on boot
