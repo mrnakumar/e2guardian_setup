@@ -37,9 +37,9 @@ echo "Setting up group1"
 ./group1_setup.sh
 
 
+
+
 ## Operations stuff
-
-
 
 # Setup log rotation
 #TODO: make logrotate size based so that cron can run more frequently and also fix path problems
@@ -56,6 +56,7 @@ echo "0 15 * * 1 ${logRotationDir}/logrotation " >> mycron
 sudo crontab -u root mycron
 rm mycron
 echo "Setting up log rotation finished successfully"
+
 
 
 
