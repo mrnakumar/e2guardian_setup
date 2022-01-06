@@ -8,12 +8,12 @@ function send_screenshots {
 
   # compress and then send
   dirPath="${PWD}/${directoryName}"
-  compressedPath="${dirPath}.tar.gz"
+  compressedPath="${dirPath}.tgz"
   if [ ! -f "${compressedPath}" ]; then
       tar -czf "${compressedPath}" "${dirPath}" || { echo "Failed to compress ${dirPath}"; return ; }
   fi
   echo "Attempting to encrypt ${compressedPath}"
-  python "./mailer.py" "${ecKey}" "encrypt" "${compressedPath}"
+  python "./encrypt_decrypt.py" "${ecKey}" "encrypt" "${compressedPath}"
   encryptedFilePath="${compressedPath}.ec"
   if [ ! -f "$encryptedFilePath" ]; then
     echo "Unknown error. Skipping sync of ${compressedPath}"
@@ -51,6 +51,7 @@ function screenshots {
   todaysShots="${workDir}/${screenShotDirPrefix}${today}"
 
   cd "${workDir}" || { echo "Failed to cd into ${workDir}. Exiting"; exit 2; }
+  source "./venv/bin/activate" || { echo "Could not activate python venv.";  exit; }
 
   # Send any existing screenshots from previous days
   for dirName in *; do
@@ -110,7 +111,9 @@ workDir="/etc/${user}/screenshots"
 
 # Validate command line arguments
 if id "${user}" &>/dev/null; then
-  echo "Will setup chrome sync cron job for user ${user}"
+  if [ "$operation" == "setup_capture" ]; then
+    echo "Will setup chrome sync cron job for user ${user}"
+  fi
 else
   echo "User ${user} not found. Exiting"
   exit 3
