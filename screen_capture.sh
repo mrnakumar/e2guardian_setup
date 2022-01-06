@@ -52,17 +52,20 @@ function screenshots {
   cd "${workDir}" || { echo "Failed to cd into ${workDir}. Exiting"; exit 2; }
 
   # Send any existing screenshots from previous days
-  for dirName in */; do
+  for dirName in *; do
+    if [ ! -d "$dirName" ]; then
+      continue
+    fi
     if [[ ${dirName} == ${screenShotDirPrefix}* ]]; then
       if [ "${todaysShots}" != "$dirName" ]; then
         send_screenshots "${dirName}" "${ecKey}" "${fromAddr}" "${toAddr}"
       fi
     fi
-    if [ ! -d "${todaysShots}" ]; then
-      mkdir "${todaysShots}" || { echo "Error in creating directory ${todaysShots}. Exiting"; exit 1; }
-    fi
-    take_screenshot "${todaysShots}"
   done
+  if [ ! -d "${todaysShots}" ]; then
+    mkdir "${todaysShots}" || { echo "Error in creating directory ${todaysShots}. Exiting"; exit 1; }
+  fi
+  take_screenshot "${todaysShots}"
 }
 
 function setup_cron_job(){
