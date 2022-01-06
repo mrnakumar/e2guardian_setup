@@ -85,7 +85,7 @@ function setup_cron_job(){
   #write out current crontab
   sudo crontab -u "${user}" -l > mycron
   # Run every 3 minutes
-  echo "*/3 * * * * ${workDir}/screen_capture.sh 'send_captured' ${user} ${ecKey} ${fromAddr} ${toAddr} > /var/log/e2guardian/cron_chrome_sync.log 2>&1" >> mycron
+  echo "*/3 * * * * ${workDir}/screen_capture.sh 'send_captured' '${user}' '${ecKey}' '${fromAddr}' '${toAddr}' > /var/log/e2guardian/cron_chrome_sync.log 2>&1" >> mycron
   #install new cron file
   sudo crontab -u "${user}" mycron
   rm mycron
