@@ -39,9 +39,6 @@ echo "Setting up group1"
 
 ## Operations stuff
 
-# Make e2guardian run on boot
-sudo cp "${e2GuardianDir}/data/scripts/e2guardian.service" /etc/systemd/system/
-sudo systemctl enable e2guardian
 
 
 # Setup log rotation
@@ -61,6 +58,15 @@ rm mycron
 echo "Setting up log rotation finished successfully"
 
 
+
+## Setup necessary services to start on boot
+
+# Make e2guardian run on boot
+sudo cp "${e2GuardianDir}/data/scripts/e2guardian.service" /etc/systemd/system/
+sudo systemctl enable e2guardian
 # Configure iptables to make sure access is only via e2guardian
+
 # TODO: setup iptables on boot. Config file can be copied from the other computer.
+echo "Setting up iptables"
 ./iptables.sh
+echo "Setting up iptables finished successfully"
