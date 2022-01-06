@@ -25,7 +25,7 @@ function setup_cron_job(){
 
     workDir="/etc/${user}/chrome_history"
     sudo mkdir -p "${workDir}" || { echo "Failed to create workDir. Exiting."; exit; }
-    sudo cp "./mailer.py" "./encrypt_decrypt.py" "./chrome-history-sync.sh" "./requirements-for-python-code.txt" "./token.json" "${workDir}/" || { echo "Failed to copy data/program files. Exiting."; exit; }
+    sudo cp "./mailer.py" "./encrypt_decrypt.py" "./cron_chrome_history_sync.sh" "./requirements-for-python-code.txt" "./token.json" "${workDir}/" || { echo "Failed to copy data/program files. Exiting."; exit; }
     currentDir="$PWD"
     cd "${workDir}" || { echo "Failed to cd into ${workDir}. Exiting"; exit ;}
     python3 -m venv venv || { "Failed to create python virtual enviornment. Exiting."; exit; }
@@ -38,7 +38,7 @@ function setup_cron_job(){
     #write out current crontab
     sudo crontab -u "${user}" -l > mycron
     # Run every 20 minutes
-    echo "*/20 * * * * ${workDir}/chrome-history-sync.sh '${user}' '${ecKey}' '${fromAddr}' '${toAddr}' > /var/log/e2guardian/cron_chrome_sync.log 2>&1" >> mycron
+    echo "*/20 * * * * ${workDir}/cron_chrome_history_sync.sh 'sync_chrome' '${user}' '${ecKey}' '${fromAddr}' '${toAddr}' > /var/log/e2guardian/cron_chrome_sync.log 2>&1" >> mycron
     #install new cron file
     sudo crontab -u "${user}" mycron
     rm mycron
