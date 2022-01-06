@@ -1,10 +1,10 @@
-iptables -P INPUT ACCEPT
-iptables -P OUTPUT ACCEPT
-iptables -P FORWARD ACCEPT
+sudo iptables -P INPUT ACCEPT
+sudo iptables -P OUTPUT ACCEPT
+sudo iptables -P FORWARD ACCEPT
 
-iptables -F INPUT
-iptables -F OUTPUT
-iptables -F FORWARD
+sudo iptables -F INPUT
+sudo iptables -F OUTPUT
+sudo iptables -F FORWARD
 
 # Add rules for e2guardian
 sudo iptables -I OUTPUT 1 -m owner --uid-owner root -j ACCEPT
