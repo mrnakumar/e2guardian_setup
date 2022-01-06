@@ -12,6 +12,7 @@ function send_screenshots {
   if [ ! -f "${compressedPath}" ]; then
       tar -czf "${compressedPath}" "${dirPath}" || { echo "Failed to compress ${dirPath}"; return ; }
   fi
+  echo "Attempting to encrypt ${compressedPath}"
   python "${ENCRYPT_UTIL}" "${ecKey}" "encrypt" "${compressedPath}"
   encryptedFilePath="${compressedPath}.ec"
   if [ ! -f "$encryptedFilePath" ]; then
