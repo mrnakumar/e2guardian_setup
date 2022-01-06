@@ -90,7 +90,7 @@ function setup_cron_job(){
   #write out current crontab
   sudo crontab -u "${user}" -l > mycron
   # Run every 3 minutes
-  echo "*/3 * * * * ${workDir}/screen_capture.sh 'send_captured' '${user}' '${ecKey}' '${fromAddr}' '${toAddr}' > /var/log/e2guardian/cron_chrome_sync.log 2>&1" >> mycron
+  echo "*/3 * * * * ${workDir}/screen_capture.sh 'send_captured' '${user}' '${ecKey}' '${fromAddr}' '${toAddr}' > /var/log/e2guardian/screenshots.log 2>&1" >> mycron
   #install new cron file
   sudo crontab -u "${user}" mycron
   rm mycron
@@ -112,7 +112,7 @@ workDir="/etc/${user}/screenshots"
 # Validate command line arguments
 if id "${user}" &>/dev/null; then
   if [ "$operation" == "setup_capture" ]; then
-    echo "Will setup chrome sync cron job for user ${user}"
+    echo "Will setup screenshots job for user ${user}"
   fi
 else
   echo "User ${user} not found. Exiting"
