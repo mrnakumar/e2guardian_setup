@@ -12,10 +12,11 @@
 # To check for correctness, change the cron expression to run every minutes (i.e. '* * * * *'). Revert once checked.
 
 function setup_cron_job(){
-    user="$1"
-    ecKey="$2"
-    fromAddr="$3"
-    toAddr="$4"
+    operationsDir="$1"
+    user="$2"
+    ecKey="$3"
+    fromAddr="$4"
+    toAddr="$5"
     if id "${user}" &>/dev/null; then
         echo "Will setup chrome sync cron job for user ${user}"
     else
@@ -23,7 +24,7 @@ function setup_cron_job(){
 	      exit 3
     fi
 
-    workDir="/etc/${user}/chrome_history"
+    workDir="${operationsDir}/chrome_history"
     sudo mkdir -p "${workDir}" || { echo "Failed to create workDir. Exiting."; exit; }
     sudo cp "./mailer.py" "./encrypt_decrypt.py" "./cron_chrome_history_sync.sh" "./requirements-for-python-code.txt" "./token.json" "${workDir}/" || { echo "Failed to copy data/program files. Exiting."; exit; }
     currentDir="$PWD"
@@ -49,16 +50,17 @@ function setup_cron_job(){
 
 # Sync chrome usages. Needs sqlite3 in path
 function sync_chrome_history() {
-    if [ "$#" -ne 4 ] ; then
-        echo "Usage: $0 UserName EncryptionKey FromEmailAddress ToEmailAddress"
+    if [ "$#" -ne 5 ] ; then
+        echo "Usage: $0 OperationsDir UserName EncryptionKey FromEmailAddress ToEmailAddress"
         exit 1
     fi
 
     # user is used to construct path to chrome History file and workDir
-    user="$1"
-    ecKey="$2"
-    fromAddr="$3"
-    toAddr="$4"
+    operationsDir="$1"
+    user="$2"
+    ecKey="$3"
+    fromAddr="$4"
+    toAddr="$5"
 
     LOCKFILE="/tmp/chrome_sync_lock.txt"
     if [ -e ${LOCKFILE} ]; then
@@ -71,7 +73,7 @@ function sync_chrome_history() {
 
 
     # Business logic starts...
-    workDir="/etc/${user}/chrome_history"
+    workDir="${operationsDir}/chrome_history"
     cd "${workDir}" || { echo "Could not cd into ${workDir}. Exiting"; exit; }
     source "./venv/bin/activate" || { echo "Could not activate python venv.";  exit; }
     ENCRYPT_UTIL="./encrypt_decrypt.py"
@@ -125,17 +127,17 @@ function sync_chrome_history() {
 
 #--------------------------------------------------------
 # Main logic begins here. Interpret and call appropriate function.
-if [ "$#" -lt 5 ]; then
-    echo "Usages: Usages: Operation<setup_cron|sync_chrome> User EncryptionKey FromEmailAddress ToEmailAddress"
+if [ "$#" -lt 6 ]; then
+    echo "Usages: Operation<setup_cron|sync_chrome> OperationsDir User EncryptionKey FromEmailAddress ToEmailAddress"
     exit 1
 fi
 operation="$1"
 # Inspect operation and call the corresponding function
 if [ "$operation" == "sync_chrome" ]; then
-    sync_chrome_history "$2" "$3" "$4" "$5"
+    sync_chrome_history "$2" "$3" "$4" "$5" "$6"
 else
     if [ "$operation" == "setup_cron" ]; then
-        setup_cron_job "$2" "$3" "$4" "$5"
+        setup_cron_job "$2" "$3" "$4" "$5" "$6"
     else
         echo "Invalid operation. Exiting."
         exit 1

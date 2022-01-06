@@ -99,16 +99,19 @@ function setup_cron_job(){
 
 # Main logic starts here.
 if [ "$#" -lt 5 ]; then
-  echo "Usages: Usages: Operation<setup_capture|send_captured> User EncryptionKey FromEmailAddress ToEmailAddress"
+  echo "Usages: Operation<setup_capture|send_captured> OperationsDir EncryptionKey FromEmailAddress ToEmailAddress"
   exit 1
 fi
+user="e2guardian"
 operation="$1"
-user="$2"
+operationsDir="$2"
 ecKey="$3"
 fromAddr="$4"
 toAddr="$5"
-workDir="/etc/${user}/screenshots"
-
+workDir="${operationsDir}/screenshots"
+if [ ! -d "${workDir}" ]; then
+  mkdir "${workDir}" || { echo "Failed to create ${workDir}. Exiting"; exit 1; }
+fi
 # Validate command line arguments
 if id "${user}" &>/dev/null; then
   if [ "$operation" == "setup_capture" ]; then

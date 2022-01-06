@@ -3,7 +3,7 @@ Description = Apply iptables rules
 
 [Service]
 Type=oneshot
-ExecStart=/usr/share/e2guardian/scripts/iptables.sh
+ExecStart=/etc/e2guardian/operations/scripts/iptables.sh
 
 [Install]
 WantedBy=network-pre.target

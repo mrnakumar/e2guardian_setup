@@ -3,12 +3,26 @@
 # This file can be used to install e2guardian.
 ###
 
+operationsDir="/etc/e2guardian/operations"
+
 # Create user
 echo "Adding user e2guardian..."
-useradd -m e2guardian
+user="e2guardian"
+if [ "$#" -lt 3 ]; then
+    echo "Usages: EncryptionKey FromEmailAddress ToEmailAddress"
+    exit 1
+fi
+encryptionKey="$1"
+fromEmailAddress="$2"
+toEmailAddress="$3"
+
+sudo useradd -m "${user}"
 
 echo "Installing e2guardian..."
-
+if [ ! -d "${operationsDir}" ]; then
+  sudo mkdir -p "${operationsDir}" || { echo "Could not create directory ${operationsDir}. Exiting"; }
+fi
+sudo chmod 777 -R "${operationsDir}" || { echo "Failed to change permissions for ${operationsDir}. Exiting"; exit 1; }
 # Install requirements for e2guardian
 while IFS='\n' read -r package; do
    sudo apt-get install $package -y || continue
@@ -41,19 +55,24 @@ echo "Setting up group1"
 
 ## Operations stuff
 
+if [ ! -d "${operationsDir}" ]; then
+  sudo mkdir "${operationsDir}" || { echo "Failed to create ${operationsDir}. Exiting."; exit  1; }
+fi
+
 # Setup log rotation
 #TODO: make logrotate size based so that cron can run more frequently and also fix path problems
 echo "Setting up log rotation"
-sudo mkdir -p /usr/local/share/e2guardian_log_rotate
-logRotationDir="/usr/local/share/e2guardian_log_rotate"
+logRotationDir="${operationsDir}/e2guardian_log_rotate"
+sudo mkdir -p "${logRotationDir}"
 sudo cp "${e2GuardianDir}/data/scripts/logrotation" "${logRotationDir}/"
-sudo chown root:root -R "${logRotationDir}"
+sudo chown e2guardian:e2guardian -R "${operationsDir}"
+
 #write out current crontab
-sudo crontab -u root -l > mycron
+sudo crontab -u e2guardian -l > mycron
 #echo new cron into cron file, runs on monday
 echo "0 15 * * 1 ${logRotationDir}/logrotation " >> mycron
 #install new cron file
-sudo crontab -u root mycron
+sudo crontab -u e2guardian mycron
 rm mycron
 echo "Setting up log rotation finished successfully"
 
@@ -65,9 +84,27 @@ echo "Setting up log rotation finished successfully"
 # Make e2guardian run on boot
 sudo cp "${e2GuardianDir}/data/scripts/e2guardian.service" /etc/systemd/system/
 sudo systemctl enable e2guardian
-# Configure iptables to make sure access is only via e2guardian
 
-# TODO: setup iptables on boot. Config file can be copied from the other computer.
-echo "Setting up iptables"
-./iptables.sh
-echo "Setting up iptables finished successfully"
+# Setup chrome sync cron job
+./cron_chrome_history_sync.sh "setup_cron" "${operationsDir}" "${user}" "${encryptionKey}" "${fromEmailAddress}" "${toEmailAddress}"
+cd "${e2GuardianParentDir}" || { echo "After setting up cron chrome history sync, failed to cd back into ${e2GuardianParentDir}. Exiting."; exit 1; }
+
+# Setup screenshots cron job
+./screen_capture.sh "setup_capture" "${operationsDir}" "${encryptionKey}" "${fromEmailAddress}" "${toEmailAddress}"
+cd "${e2GuardianParentDir}" || { echo "After setting up cron job for screenshots, failed to cd back into ${e2GuardianParentDir}. Exiting."; exit 1; }
+
+# Configure iptables to make sure access is only via e2guardian
+iptablesScriptPath="${operationsDir}/scripts"
+if [ ! -d "${iptablesScriptPath}" ]; then
+  sudo mkdir "${iptablesScriptPath}" || { echo "Could not create ${iptablesScriptPath}. Exiting"; exit 1; }
+fi
+echo "Copyting iptables.sh"
+sudo cp "iptables.sh" "${iptablesScriptPath}/"
+echo "Copied iptables.sh"
+sudo cp "iptables.service" /etc/systemd/system/
+sudo systemctl enable iptables.service
+sudo chmod 700 -R "/etc/e2guardian"
+sudo chown "${user}:${user}" -R "/etc/e2guardian"
+#sudo chown "${user}:${user}" -R "${operationsDir}"
+sudo chown "${user}:${user}" -R "/var/log/e2guardian"
+echo "Setting up e2guardian finished successfully"
