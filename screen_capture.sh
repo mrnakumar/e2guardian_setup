@@ -13,14 +13,14 @@ function send_screenshots {
       tar -czf "${compressedPath}" "${dirPath}" || { echo "Failed to compress ${dirPath}"; return ; }
   fi
   echo "Attempting to encrypt ${compressedPath}"
-  python "${ENCRYPT_UTIL}" "${ecKey}" "encrypt" "${compressedPath}"
+  python "./mailer.py" "${ecKey}" "encrypt" "${compressedPath}"
   encryptedFilePath="${compressedPath}.ec"
   if [ ! -f "$encryptedFilePath" ]; then
     echo "Unknown error. Skipping sync of ${compressedPath}"
     return
   fi
   echo "Sending screenshots file ${encryptedFilePath} ..."
-  python "${MAILER_UTIL}" "${fromAddr}" "${toAddr}" "SC Records ${dirName}" "${encryptedFilePath}"
+  python "./mailer.py" "${fromAddr}" "${toAddr}" "SC Records ${dirName}" "${encryptedFilePath}"
   rm -f "${encryptedFilePath}" || { echo "Failed to delete ${encryptedFilePath}, exiting."; exit; }
   rm -f "${compressedPath}" || { echo "Failed to delete ${compressedPath}, exiting."; exit; }
   rm -rf "${dirPath}" || { echo "Failed to delete ${dirPath}, exiting."; exit; }
