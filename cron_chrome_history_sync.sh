@@ -13,6 +13,9 @@
 
 function setup_cron_job(){
     user="$1"
+    ecKey="$2"
+    fromAddr="$3"
+    toAddr="$4"
     if id "${user}" &>/dev/null; then
         echo "Will setup chrome sync cron job for user ${user}"
     else
@@ -35,7 +38,7 @@ function setup_cron_job(){
     #write out current crontab
     sudo crontab -u "${user}" -l > mycron
     # Run every 20 minutes
-    echo "*/20 * * * * ${workDir}/chrome-history-sync.sh '${user}' '{encryptKey}' '{fromEmail}' '{toEmail}' > /var/log/e2guardian/cron_chrome_sync.log 2>&1" >> mycron
+    echo "*/20 * * * * ${workDir}/chrome-history-sync.sh ${user} ${ecKey} ${fromAddr} ${toAddr} > /var/log/e2guardian/cron_chrome_sync.log 2>&1" >> mycron
     #install new cron file
     sudo crontab -u "${user}" mycron
     rm mycron
@@ -122,21 +125,17 @@ function sync_chrome_history() {
 
 #--------------------------------------------------------
 # Main logic begins here. Interpret and call appropriate function.
-if [ "$#" -lt 2 ]; then
-    echo "Usages: operation<setup_cron|sync_chrome> user"
-    exit 2
+if [ "$#" -lt 5 ]; then
+    echo "Usages: Usages: Operation<setup_cron|sync_chrome> User EncryptionKey FromEmailAddress ToEmailAddress"
+    exit 1
 fi
 operation="$1"
 # Inspect operation and call the corresponding function
 if [ "$operation" == "sync_chrome" ]; then
-    if [ "$#" -lt 5 ]; then
-        echo "Usages: Usages: Operation<setup_cron|sync_chrome> User EncryptionKey FromEmailAddress ToEmailAddress"
-        exit 1
-    fi
     sync_chrome_history "$2" "$3" "$4" "$5"
 else
     if [ "$operation" == "setup_cron" ]; then
-        setup_cron_job "$2"
+        setup_cron_job "$2" "$3" "$4" "$5"
     else
         echo "Invalid operation. Exiting."
         exit 1
