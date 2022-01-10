@@ -39,7 +39,7 @@ function setup_cron_job(){
     #write out current crontab
     sudo crontab -u "${user}" -l > mycron
     # Run every 20 minutes
-    echo "*/20 * * * * ${workDir}/cron_chrome_history_sync.sh 'sync_chrome' '${user}' '${ecKey}' '${fromAddr}' '${toAddr}' > /var/log/e2guardian/cron_chrome_sync.log 2>&1" >> mycron
+    echo "*/20 * * * * ${workDir}/cron_chrome_history_sync.sh 'sync_chrome' '${operationsDir}' '${user}' '${ecKey}' '${fromAddr}' '${toAddr}' > /var/log/e2guardian/cron_chrome_sync.log 2>&1" >> mycron
     #install new cron file
     sudo crontab -u "${user}" mycron
     rm mycron

@@ -41,7 +41,7 @@ function take_screenshot {
 
 function screenshots {
   user="$1"
-  workDir="$2"
+  workDir="${2}/screenshots"
   ecKey="$3"
   fromAddr="$4"
   toAddr="$5"
@@ -51,6 +51,7 @@ function screenshots {
   todaysShots="${workDir}/${screenShotDirPrefix}${today}"
 
   cd "${workDir}" || { echo "Failed to cd into ${workDir}. Exiting"; exit 2; }
+  echo "Here at ${workDir}"
   source "./venv/bin/activate" || { echo "Could not activate python venv.";  exit; }
 
   # Send any existing screenshots from previous days
@@ -72,10 +73,11 @@ function screenshots {
 
 function setup_cron_job(){
   user="$1"
-  workDir="$2"
+  operationsDir="$2"
   ecKey="$3"
   fromAddr="$4"
   toAddr="$5"
+  workDir="${operationsDir}/screenshots"
   sudo mkdir -p "${workDir}" || { echo "Failed to create workDir. Exiting."; exit; }
   sudo cp "./mailer.py" "./encrypt_decrypt.py" "./screen_capture.sh" "./requirements-for-python-code.txt" "./token.json" "${workDir}/" || { echo "Failed to copy data/program files. Exiting."; exit; }
   currentDir="$PWD"
@@ -90,7 +92,7 @@ function setup_cron_job(){
   #write out current crontab
   sudo crontab -u "${user}" -l > mycron
   # Run every 3 minutes
-  echo "*/3 * * * * ${workDir}/screen_capture.sh 'send_captured' '${user}' '${ecKey}' '${fromAddr}' '${toAddr}' > /var/log/e2guardian/screenshots.log 2>&1" >> mycron
+  echo "* * * * * ${workDir}/screen_capture.sh 'send_captured' '${operationsDir}' '${user}' '${ecKey}' '${fromAddr}' '${toAddr}' > /var/log/e2guardian/screenshots.log 2>&1" >> mycron
   #install new cron file
   sudo crontab -u "${user}" mycron
   rm mycron
@@ -140,9 +142,9 @@ fi
 
 # Call appropriate function based on requested operation
 if [ "$operation" == "send_captured" ]; then
-  screenshots "$user" "$workDir" "$ecKey" "$fromAddr" "$toAddr"
+  screenshots "$user" "$operationsDir" "$ecKey" "$fromAddr" "$toAddr"
 fi
 if [ "$1" == "setup_capture" ]; then
-  setup_cron_job "${user}" "${workDir}" "$ecKey" "$fromAddr" "$toAddr"
+  setup_cron_job "${user}" "${operationsDir}" "$ecKey" "$fromAddr" "$toAddr"
 fi
 
