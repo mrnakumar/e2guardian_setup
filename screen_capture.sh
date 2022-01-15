@@ -104,8 +104,8 @@ if [ "$#" -lt 5 ]; then
   echo "Usages: Operation<setup_capture|send_captured> OperationsDir EncryptionKey FromEmailAddress ToEmailAddress"
   exit 1
 fi
-user="e2guardian"
-operation="$2"
+operation="$1"
+user="$2"
 operationsDir="$3"
 ecKey="$4"
 fromAddr="$5"

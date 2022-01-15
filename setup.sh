@@ -3,6 +3,11 @@
 # This file can be used to install e2guardian.
 ###
 
+sudo chmod 755 -R "/etc/e2guardian"
+sudo chown "e2guardian:e2guardian" -R "/etc/e2guardian"
+#sudo chown "${user}:${user}" -R "${operationsDir}"
+sudo chown "e2guardian:e2guardian" -R "/var/log/e2guardian"
+
 operationsDir="/etc/e2guardian/operations"
 
 # Create user
@@ -90,7 +95,7 @@ sudo systemctl enable e2guardian
 cd "${e2GuardianParentDir}" || { echo "After setting up cron chrome history sync, failed to cd back into ${e2GuardianParentDir}. Exiting."; exit 1; }
 
 # Setup screenshots cron job
-./screen_capture.sh "setup_capture" "${operationsDir}" "${encryptionKey}" "${fromEmailAddress}" "${toEmailAddress}"
+./screen_capture.sh "setup_capture" "${user}" "${operationsDir}" "${encryptionKey}" "${fromEmailAddress}" "${toEmailAddress}"
 cd "${e2GuardianParentDir}" || { echo "After setting up cron job for screenshots, failed to cd back into ${e2GuardianParentDir}. Exiting."; exit 1; }
 
 # Configure iptables to make sure access is only via e2guardian
@@ -103,8 +108,5 @@ sudo cp "iptables.sh" "${iptablesScriptPath}/"
 echo "Copied iptables.sh"
 sudo cp "iptables.service" /etc/systemd/system/
 sudo systemctl enable iptables.service
-sudo chmod 700 -R "/etc/e2guardian"
-sudo chown "${user}:${user}" -R "/etc/e2guardian"
-#sudo chown "${user}:${user}" -R "${operationsDir}"
-sudo chown "${user}:${user}" -R "/var/log/e2guardian"
+
 echo "Setting up e2guardian finished successfully"
