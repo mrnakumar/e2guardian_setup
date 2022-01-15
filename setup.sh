@@ -6,16 +6,16 @@
 operationsDir="/etc/e2guardian/operations"
 
 # Create user
-echo "Adding user e2guardian..."
-user="e2guardian"
-if [ "$#" -lt 3 ]; then
-    echo "Usages: EncryptionKey FromEmailAddress ToEmailAddress"
+if [ "$#" -lt 4 ]; then
+    echo "Usages: EncryptionKey captureAndUsageUser FromEmailAddress ToEmailAddress"
     exit 1
 fi
 encryptionKey="$1"
-fromEmailAddress="$2"
-toEmailAddress="$3"
+user="$2"
+fromEmailAddress="$3"
+toEmailAddress="$4"
 
+echo "Adding user ${user}..."
 sudo useradd -m "${user}"
 
 echo "Installing e2guardian..."

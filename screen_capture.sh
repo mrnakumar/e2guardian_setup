@@ -105,11 +105,11 @@ if [ "$#" -lt 5 ]; then
   exit 1
 fi
 user="e2guardian"
-operation="$1"
-operationsDir="$2"
-ecKey="$3"
-fromAddr="$4"
-toAddr="$5"
+operation="$2"
+operationsDir="$3"
+ecKey="$4"
+fromAddr="$5"
+toAddr="$6"
 workDir="${operationsDir}/screenshots"
 if [ ! -d "${workDir}" ]; then
   mkdir "${workDir}" || { echo "Failed to create ${workDir}. Exiting"; exit 1; }
