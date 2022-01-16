@@ -28,7 +28,7 @@ function setup_cron_job(){
     echo "Setting up chrome sync cron job for ${user} in path ${workDir}"
     sudo mkdir -p "${workDir}" || { echo "Failed to create workDir. Exiting."; exit; }
     sudo chmod 777 -R "${workDir}"
-    sudo cp "./mailer.py" "./encrypt_decrypt.py" "./cron_chrome_history_sync.sh" "./requirements-for-python-code.txt" "./token.json" "${workDir}/" || { echo "Failed to copy data/program files. Exiting."; exit; }
+    sudo cp "./mailer.py" "./encrypt_decrypt.py" "./cron_chrome_history_sync.sh" "./requirements-for-python-code.txt" "./credentials.json" "./token.json" "${workDir}/" || { echo "Failed to copy data/program files. Exiting."; exit; }
     currentDir="$PWD"
     cd "${workDir}" || { echo "Failed to cd into ${workDir}. Exiting"; exit ;}
     python3 -m venv venv || { "Failed to create python virtual enviornment. Exiting."; exit; }
@@ -76,20 +76,25 @@ function sync_chrome_history() {
 
     # Business logic starts...
     workDir="${operationsDir}/chrome_history"
+    echo "The work directory is ${workDir}"
     cd "${workDir}" || { echo "Could not cd into ${workDir}. Exiting"; exit; }
     source "./venv/bin/activate" || { echo "Could not activate python venv.";  exit; }
+    echo "Sourced the interpreter"
     ENCRYPT_UTIL="./encrypt_decrypt.py"
     MAILER_UTIL="./mailer.py"
     query="SELECT urls.url, urls.visit_count, urls.last_visit_time FROM urls;"
     historyFileName="History"
     historyFilePath="/home/${user}/.config/google-chrome/Default/${historyFileName}"
     cp "${historyFilePath}" ./${historyFileName}
+    echo "Copied the history file"
     day=$(date +%d)
     recordsFilePrefix="records_"
     recordFile="${recordsFilePrefix}${day}"
+    echo "Today's file name is ${recordFile}"
     if [ ! -f "$recordFile" ]; then
         # Check if previous day's record exist. If yes, then share those.
-        for fileName in `ls -d ${recordsFilePrefix}*`; do
+	echo "Checking if previous day's record exist..."
+        for fileName in ${recordsFilePrefix}*; do
             filePath="${PWD}/${fileName}"
             echo "Processing file $filePath"
             # Send and then delete
@@ -115,6 +120,7 @@ function sync_chrome_history() {
 
         touch "${recordFile}" || { echo "Failed to create records file ${recordFile}"; exit; }
     fi
+    echo "About to copy the hstFile"
     sqlite3 "./${historyFileName}" "${query}" >> "${recordFile}"
     # Deduplicate records by url.
     sort -u -t '|' -k1,1 "${recordFile}" -o "${recordFile}"

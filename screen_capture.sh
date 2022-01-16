@@ -78,11 +78,12 @@ function setup_cron_job(){
   fromAddr="$4"
   toAddr="$5"
   workDir="${operationsDir}/screenshots"
+  echo "setup_cron_job executing with work directory: ${workDir}"
   sudo mkdir -p "${workDir}" || { echo "Failed to create workDir. Exiting."; exit; }
   sudo cp "./mailer.py" "./encrypt_decrypt.py" "./screen_capture.sh" "./requirements-for-python-code.txt" "./token.json" "${workDir}/" || { echo "Failed to copy data/program files. Exiting."; exit; }
   currentDir="$PWD"
   cd "${workDir}" || { echo "Failed to cd into ${workDir}. Exiting"; exit ;}
-  python3 -m venv venv || { "Failed to create python virtual environment. Exiting."; exit; }
+  python3 -m venv venv || { echo "Failed to create python virtual environment. Exiting."; exit; }
   source "./venv/bin/activate"
   pip install -r "./requirements-for-python-code.txt" || { echo "Pip install failed for venv. Exiting."; exit; }
   cd "${currentDir}"  || { echo "Failed to cd into ${currentDir}. Exiting"; exit ;}
@@ -92,7 +93,7 @@ function setup_cron_job(){
   #write out current crontab
   sudo crontab -u "${user}" -l > mycron
   # Run every 3 minutes
-  echo "* * * * * ${workDir}/screen_capture.sh 'send_captured' '${operationsDir}' '${user}' '${ecKey}' '${fromAddr}' '${toAddr}' > /var/log/e2guardian/screenshots.log 2>&1" >> mycron
+  echo "* * * * * ${workDir}/screen_capture.sh 'send_captured' '${user}' '${operationsDir}' '${ecKey}' '${fromAddr}' '${toAddr}' > /var/log/e2guardian/screenshots.log 2>&1" >> mycron
   #install new cron file
   sudo crontab -u "${user}" mycron
   rm mycron
@@ -112,7 +113,7 @@ fromAddr="$5"
 toAddr="$6"
 workDir="${operationsDir}/screenshots"
 if [ ! -d "${workDir}" ]; then
-  mkdir "${workDir}" || { echo "Failed to create ${workDir}. Exiting"; exit 1; }
+  sudo mkdir "${workDir}" || { echo "$0: ${operation} : Main: failed to create ${workDir}. Exiting"; exit 1; }
 fi
 # Validate command line arguments
 if id "${user}" &>/dev/null; then
