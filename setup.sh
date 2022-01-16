@@ -3,11 +3,6 @@
 # This file can be used to install e2guardian.
 ###
 
-sudo chmod 755 -R "/etc/e2guardian"
-sudo chown "e2guardian:e2guardian" -R "/etc/e2guardian"
-#sudo chown "${user}:${user}" -R "${operationsDir}"
-sudo chown "e2guardian:e2guardian" -R "/var/log/e2guardian"
-
 operationsDir="/etc/e2guardian/operations"
 
 # Create user
@@ -28,6 +23,11 @@ if [ ! -d "${operationsDir}" ]; then
   sudo mkdir -p "${operationsDir}" || { echo "Could not create directory ${operationsDir}. Exiting"; }
 fi
 sudo chmod 777 -R "${operationsDir}" || { echo "Failed to change permissions for ${operationsDir}. Exiting"; exit 1; }
+sudo chown "e2guardian:e2guardian" -R "/etc/e2guardian"
+sudo chown "e2guardian:e2guardian" -R "/var/log/e2guardian"
+sudo chmod 777 -R "/var/log/e2guardian" || { echo "Failed to change permissions for '/var/log/e2guardian'. Exiting"; exit 1; }
+
+
 # Install requirements for e2guardian
 while IFS='\n' read -r package; do
    sudo apt-get install $package -y || continue
@@ -60,17 +60,14 @@ echo "Setting up group1"
 
 ## Operations stuff
 
-if [ ! -d "${operationsDir}" ]; then
-  sudo mkdir "${operationsDir}" || { echo "Failed to create ${operationsDir}. Exiting."; exit  1; }
-fi
-
 # Setup log rotation
 #TODO: make logrotate size based so that cron can run more frequently and also fix path problems
 echo "Setting up log rotation"
 logRotationDir="${operationsDir}/e2guardian_log_rotate"
 sudo mkdir -p "${logRotationDir}"
 sudo cp "${e2GuardianDir}/data/scripts/logrotation" "${logRotationDir}/"
-sudo chown e2guardian:e2guardian -R "${operationsDir}"
+sudo chown e2guardian:e2guardian -R "${logRotationDir}"
+sudo chmod 777 -R "${logRotationDir}"
 
 #write out current crontab
 sudo crontab -u e2guardian -l > mycron

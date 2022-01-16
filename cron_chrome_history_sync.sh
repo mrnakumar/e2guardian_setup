@@ -26,6 +26,7 @@ function setup_cron_job(){
 
     workDir="${operationsDir}/chrome_history"
     sudo mkdir -p "${workDir}" || { echo "Failed to create workDir. Exiting."; exit; }
+    sudo chmod 777 -R "${workDir}"
     sudo cp "./mailer.py" "./encrypt_decrypt.py" "./cron_chrome_history_sync.sh" "./requirements-for-python-code.txt" "./token.json" "${workDir}/" || { echo "Failed to copy data/program files. Exiting."; exit; }
     currentDir="$PWD"
     cd "${workDir}" || { echo "Failed to cd into ${workDir}. Exiting"; exit ;}
@@ -134,6 +135,7 @@ fi
 operation="$1"
 # Inspect operation and call the corresponding function
 if [ "$operation" == "sync_chrome" ]; then
+    echo "Invoking sync_chrome_history with operationsDir $2."
     sync_chrome_history "$2" "$3" "$4" "$5" "$6"
 else
     if [ "$operation" == "setup_cron" ]; then
