@@ -25,6 +25,7 @@ function setup_cron_job(){
     fi
 
     workDir="${operationsDir}/chrome_history"
+    echo "Setting up chrome sync cron job for ${user} in path ${workDir}"
     sudo mkdir -p "${workDir}" || { echo "Failed to create workDir. Exiting."; exit; }
     sudo chmod 777 -R "${workDir}"
     sudo cp "./mailer.py" "./encrypt_decrypt.py" "./cron_chrome_history_sync.sh" "./requirements-for-python-code.txt" "./token.json" "${workDir}/" || { echo "Failed to copy data/program files. Exiting."; exit; }
@@ -40,7 +41,7 @@ function setup_cron_job(){
     #write out current crontab
     sudo crontab -u "${user}" -l > mycron
     # Run every 20 minutes
-    echo "*/20 * * * * ${workDir}/cron_chrome_history_sync.sh 'sync_chrome' '${operationsDir}' '${user}' '${ecKey}' '${fromAddr}' '${toAddr}' > /var/log/e2guardian/cron_chrome_sync.log 2>&1" >> mycron
+    echo "* * * * * ${workDir}/cron_chrome_history_sync.sh 'sync_chrome' '${operationsDir}' '${user}' '${ecKey}' '${fromAddr}' '${toAddr}' > /var/log/e2guardian/cron_chrome_sync.log 2>&1" >> mycron
     #install new cron file
     sudo crontab -u "${user}" mycron
     rm mycron
