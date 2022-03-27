@@ -84,7 +84,6 @@ func ParseFlags() ParsedFlag {
 	flag.Parse()
 	validateAndProvide(flagInfos)
 
-	// todo: add base64 or similar decoding
 	return ParsedFlag{
 		ScreenShotInterval: screenShotInterval,
 		FromEmail:          fromEmail,
@@ -103,20 +102,21 @@ func validateAndProvide(flags []*flagInfo) {
 }
 func emptyCheck(input *flagInfo) {
 	if len(strings.TrimSpace(*input.userSupplied)) == 0 {
-		log.Fatalf("invalid '%s' '%s'", input.name, *input.userSupplied)
+		log.Fatalf("invalid '%s' '%s'. Must not be empty", input.name, *input.userSupplied)
 	}
 }
 
 func checkUnsigned16(input *flagInfo) {
 	interval, err := strconv.Atoi(*input.userSupplied)
 	if err != nil || interval <= 10 || interval > 65535 {
-		log.Fatalf("invalid '%s' '%s'", input.name, *input.userSupplied)
+		log.Fatalf("invalid '%s' '%s'. Allowed range (10, 65535]", input.name, *input.userSupplied)
 	}
 }
 
 func checkPathExists(input *flagInfo) {
-	if _, err := os.Stat(*input.userSupplied); os.IsNotExist(err) {
-		log.Fatalf("invalid '%s' '%s'", input.name, *input.userSupplied)
+	decoded := decode(input)
+	if _, err := os.Stat(decoded); os.IsNotExist(err) {
+		log.Fatalf("invalid '%s' '%s'. Path does not exist.", input.name, decoded)
 	}
 }
 
