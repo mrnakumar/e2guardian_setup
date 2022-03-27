@@ -130,12 +130,6 @@ func checkPathExists(input *flagInfo) {
 	}
 }
 
-func asIs(target *string) func(info *flagInfo) {
-	return func(input *flagInfo) {
-		*target = *input.userSupplied
-	}
-}
-
 func asUin16(target *uint16) func(*flagInfo) {
 	return func(input *flagInfo) {
 		interval, _ := strconv.Atoi(*input.userSupplied)
