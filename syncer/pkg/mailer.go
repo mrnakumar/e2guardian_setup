@@ -81,10 +81,6 @@ func Mailer(wg *sync.WaitGroup, options MailOptions) {
 					}
 				}
 			}
-			if batch.size > 0 {
-				sendMail(options, batch.files)
-				batch.Reset()
-			}
 		}
 		time.Sleep(time.Second * time.Duration(options.Interval))
 	}
