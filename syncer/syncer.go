@@ -7,10 +7,10 @@ import (
 )
 
 func main() {
+	flags := pkg.ParseFlags()
 	var wg sync.WaitGroup
 	wg.Add(1)
-	go pkg.ScreenShotMaker(&wg, 10, "/keys/pub",
-		"/syncer/shots")
+	go pkg.ScreenShotMaker(&wg, flags.ScreenShotInterval, flags.KeyPath, flags.ShotsFolder)
 	wg.Wait()
 	log.Println("exiting")
 }

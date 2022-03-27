@@ -20,7 +20,7 @@ type screenShot struct {
 	Image []byte
 }
 
-func ScreenShotMaker(wg *sync.WaitGroup, interval uint64, recipientKeyPath string, shotsPath string) {
+func ScreenShotMaker(wg *sync.WaitGroup, interval uint16, recipientKeyPath string, shotsPath string) {
 	defer wg.Done()
 	if _, err := os.Stat(shotsPath); os.IsNotExist(err) {
 		err := os.Mkdir(shotsPath, 0644)
