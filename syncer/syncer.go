@@ -6,6 +6,8 @@ import (
 	"syncer/pkg"
 )
 
+const gmailSizeLimit = 25*1024*1024 - 10*1024
+
 func main() {
 	flags := pkg.ParseFlags()
 	var wg sync.WaitGroup
@@ -18,12 +20,11 @@ func main() {
 		Host:       "smtp.gmail.com",
 		Port:       25,
 		Subject:    "SHOTS",
-		Interval:   10,
+		Interval:   flags.SyncInterval,
 		BaseFolder: flags.ShotsFolder,
 		FileSuffix: []string{".zip", ".png"},
-		SizeLimit:  30000,
+		SizeLimit:  gmailSizeLimit,
 	})
 	wg.Wait()
 	log.Println("exiting")
 }
-// 25*1024*1024 - 10*1024

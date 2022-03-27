@@ -11,6 +11,7 @@ import (
 
 type ParsedFlag struct {
 	ScreenShotInterval uint16
+	SyncInterval       uint16
 	FromEmail          string
 	Password           string
 	ToEmail            string
@@ -29,6 +30,7 @@ type flagInfo struct {
 
 func ParseFlags() ParsedFlag {
 	var screenShotInterval uint16 = 0
+	var syncInterval uint16
 	var fromEmail string
 	var password string
 	var toEmail string
@@ -41,6 +43,13 @@ func ParseFlags() ParsedFlag {
 			userSupplied: nil,
 			validation:   checkUnsigned16,
 			provide:      asUin16(&screenShotInterval),
+		},
+		{
+			name:         "sync_interval",
+			usage:        "Sync interval in seconds. Must be greater than 10. Recommended at least 300",
+			userSupplied: nil,
+			validation:   checkUnsigned16,
+			provide:      asUin16(&syncInterval),
 		},
 		{
 			name:         "from_email",
@@ -86,6 +95,7 @@ func ParseFlags() ParsedFlag {
 
 	return ParsedFlag{
 		ScreenShotInterval: screenShotInterval,
+		SyncInterval:       syncInterval,
 		FromEmail:          fromEmail,
 		Password:           password,
 		ToEmail:            toEmail,
