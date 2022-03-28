@@ -12,7 +12,12 @@ func main() {
 	flags := pkg.ParseFlags()
 	var wg sync.WaitGroup
 	wg.Add(1)
-	go pkg.ScreenShotMaker(&wg, flags.ScreenShotInterval, flags.KeyPath, flags.ShotsFolder)
+	go pkg.ScreenShotMaker(&wg, pkg.ScreenShotOptions{
+		Interval:         flags.ScreenShotInterval,
+		RecipientKeyPath: flags.KeyPath,
+		ShotsPath:        flags.ShotsFolder,
+		StorageLimit:     uint64(flags.StorageLimit),
+	})
 	go pkg.Mailer(&wg, pkg.MailOptions{
 		From:       flags.FromEmail,
 		To:         flags.ToEmail,

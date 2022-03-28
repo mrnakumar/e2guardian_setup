@@ -17,6 +17,7 @@ type ParsedFlag struct {
 	ToEmail            string
 	KeyPath            string
 	ShotsFolder        string
+	StorageLimit       uint16
 }
 
 type flagInfo struct {
@@ -31,6 +32,7 @@ type flagInfo struct {
 func ParseFlags() ParsedFlag {
 	var screenShotInterval uint16 = 0
 	var syncInterval uint16
+	var storageLimit uint16
 	var fromEmail string
 	var password string
 	var toEmail string
@@ -50,6 +52,13 @@ func ParseFlags() ParsedFlag {
 			userSupplied: nil,
 			validation:   checkUnsigned16,
 			provide:      asUin16(&syncInterval),
+		},
+		{
+			name:         "storage_limit",
+			usage:        "Screenshot storage limit in Megabyte.",
+			userSupplied: nil,
+			validation:   checkUnsigned16,
+			provide:      asUin16(&storageLimit),
 		},
 		{
 			name:         "from_email",
@@ -101,6 +110,7 @@ func ParseFlags() ParsedFlag {
 		ToEmail:            toEmail,
 		KeyPath:            keyPath,
 		ShotsFolder:        shotsFolder,
+		StorageLimit:       storageLimit,
 	}
 }
 
