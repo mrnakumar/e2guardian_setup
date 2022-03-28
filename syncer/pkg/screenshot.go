@@ -30,18 +30,21 @@ func ScreenShotMaker(wg *sync.WaitGroup, options ScreenShotOptions) {
 	defer wg.Done()
 	if _, err := os.Stat(options.ShotsPath); os.IsNotExist(err) {
 		err := os.Mkdir(options.ShotsPath, 0644)
-		log.Fatalf("failed to create shots path '%s'. Caused by : '%v'", options.ShotsPath, err)
+		log.Printf("failed to create shots path '%s'. Caused by : '%v'", options.ShotsPath, err)
+		return
 	}
 	recipientKey, err := ioutil.ReadFile(options.RecipientKeyPath)
 	if err != nil {
-		log.Fatalf("failed to read file '%s'. Caused by : '%v'", options.RecipientKeyPath, err)
+		log.Printf("failed to read file '%s'. Caused by : '%v'", options.RecipientKeyPath, err)
+		return
 	}
 
 	recipient := string(recipientKey)
 	encryptor, err := CreateEncryptor(strings.TrimSuffix(recipient, "\n"))
 
 	if err != nil {
-		log.Fatalf("failed to create encryptor. Caused by : '%v'", err)
+		log.Printf("failed to create encryptor. Caused by : '%v'", err)
+		return
 	}
 	for {
 		size, err := Size(options.ShotsPath)
