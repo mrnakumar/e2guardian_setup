@@ -11,15 +11,21 @@ import (
 	"time"
 )
 
-func FileHandler(basePath string, eKey string, ePassword string) func(c *gin.Context) {
+func FileHandler(decoder Decoder, basePath string, eKey string, ePassword string) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		file, _ := c.FormFile("file")
-		header := strings.Split(c.GetHeader("Authorization"), ":")
-		key, pwd := header[0], header[1]
+		authHeader := c.GetHeader("Authorization")
+		authHeaderDecoded, err := decoder.Decrypt(authHeader)
+		if err != nil {
+			c.String(http.StatusUnauthorized, "Invalid auth")
+			return
+		}
+		headerParts := strings.Split(string(authHeaderDecoded), ":")
+		key, pwd := headerParts[0], headerParts[1]
 		if eKey != key || ePassword != pwd {
 			c.String(http.StatusUnauthorized, "")
 			return
 		}
+		file, _ := c.FormFile("file")
 		if file == nil {
 			log.Printf("missing file")
 			c.String(http.StatusBadRequest, "missing file")
@@ -28,7 +34,7 @@ func FileHandler(basePath string, eKey string, ePassword string) func(c *gin.Con
 		now := time.Now().UnixMilli()
 		dstFileName := fmt.Sprintf("%s_%d_%d", file.Filename, now, getRandomNumber())
 		dstPath := filepath.Join(basePath, dstFileName)
-		err := c.SaveUploadedFile(file, dstPath)
+		err = c.SaveUploadedFile(file, dstPath)
 		if err != nil {
 			log.Printf("failed to save file '%s'. Caused by '%v'", file.Filename, err)
 			c.String(http.StatusInternalServerError, "")
