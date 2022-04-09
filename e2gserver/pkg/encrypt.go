@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"bytes"
+	"encoding/base64"
 	"filippo.io/age"
 	"fmt"
 	"io"
@@ -19,7 +20,13 @@ func CreateDecoder(privateKeyFilePath string) (Decoder, error) {
 	if err != nil {
 		return Decoder{}, fmt.Errorf("failed to read file '%s'. Caused by : '%v'", privateKeyFilePath, err)
 	}
-	identity, err := age.ParseX25519Identity(strings.TrimSuffix(string(privateKey), "\n"))
+
+	trimmed := strings.TrimSuffix(string(privateKey), "\n")
+	decoded, err := decode(trimmed)
+	if err != nil {
+		return Decoder{}, err
+	}
+	identity, err := age.ParseX25519Identity(decoded)
 	if err != nil {
 		log.Fatalf("Failed to parse private key: %v", err)
 	}
@@ -36,4 +43,12 @@ func (e Decoder) Decrypt(data string) ([]byte, error) {
 		return nil, fmt.Errorf("failed to decrypt")
 	}
 	return out.Bytes(), nil
+}
+
+func decode(input string) (string, error) {
+	decoded, err := base64.StdEncoding.DecodeString(input)
+	if err != nil {
+		return "", fmt.Errorf("failed to decode identity file content")
+	}
+	return string(decoded), nil
 }
