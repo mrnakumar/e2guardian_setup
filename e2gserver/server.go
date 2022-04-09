@@ -15,7 +15,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to create decoder. Reason: '%v'", err)
 	}
-	route.POST("/shot", pkg.FileHandler(decoder, flags.BasePath, flags.UserName, flags.Password))
+	route.POST("/shoot", pkg.FileHandler(decoder, flags.BasePath, flags.UserName, flags.Password))
 	route.GET("/health", func(c *gin.Context) {
 		c.String(http.StatusOK, "Hi")
 	})
