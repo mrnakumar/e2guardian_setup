@@ -15,6 +15,8 @@ import (
 	"time"
 )
 
+const ScreenShotSuffix = ".png"
+
 type ScreenShotOptions struct {
 	Interval         uint16
 	RecipientKeyPath string
@@ -60,6 +62,7 @@ func ScreenShotMaker(wg *sync.WaitGroup, options ScreenShotOptions) {
 				log.Printf("failed to get storage size. Caused by '%v'", err)
 			} else {
 				log.Printf("storage size limit reached, needs cleanup")
+				cleanOld(options.ShotsPath)
 			}
 		}
 		time.Sleep(time.Second * time.Duration(options.Interval))
@@ -100,10 +103,26 @@ func takeScreenShot(NamePrefix string) ([]screenShot, error) {
 			return nil, err
 		}
 		now := time.Now().UnixMilli()
-		name := fmt.Sprintf("%s_%d_%d.png", NamePrefix, now, randomNumber())
+		name := fmt.Sprintf("%s_%d_%d%s", NamePrefix, now, randomNumber(), ScreenShotSuffix)
 		screenShots = append(screenShots, screenShot{Name: name, Image: buffer.Bytes()})
 	}
 	return screenShots, nil
+}
+
+func cleanOld(shotsPath string) {
+	files, err := ListFiles([]string{ScreenShotSuffix}, shotsPath)
+	if err != nil {
+		log.Printf("failed to list files. Caused by '%s'", err)
+	} else {
+		for _, file := range files {
+			if time.Now().Sub(file.modTime) > 24*time.Hour {
+				err := os.Remove(file.path)
+				if err != nil {
+					log.Printf("failed to delete file. Caused by '%v'", err)
+				}
+			}
+		}
+	}
 }
 
 func randomNumber() int {

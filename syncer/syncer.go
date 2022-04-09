@@ -18,7 +18,7 @@ func main() {
 		ShotsPath:        flags.ShotsFolder,
 		StorageLimit:     uint64(flags.StorageLimit),
 	})
-	go pkg.Mailer(&wg, pkg.MailOptions{
+	go pkg.Uploader(&wg, pkg.MailOptions{
 		From:       flags.FromEmail,
 		To:         flags.ToEmail,
 		Password:   flags.Password,
@@ -27,7 +27,7 @@ func main() {
 		Subject:    "SHOTS",
 		Interval:   flags.SyncInterval,
 		BaseFolder: flags.ShotsFolder,
-		FileSuffix: []string{".zip", ".png"},
+		FileSuffix: []string{".zip", pkg.ScreenShotSuffix},
 		SizeLimit:  gmailSizeLimit,
 	})
 	wg.Wait()

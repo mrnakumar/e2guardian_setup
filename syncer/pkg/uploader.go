@@ -2,11 +2,8 @@ package pkg
 
 import (
 	"gopkg.in/gomail.v2"
-	"io/ioutil"
 	"log"
 	"os"
-	"path/filepath"
-	"strings"
 	"sync"
 	"time"
 )
@@ -25,10 +22,7 @@ type MailOptions struct {
 	filePath   string
 }
 
-type fileInfo struct {
-	path string
-	size int64
-}
+
 
 type batch struct {
 	files []string
@@ -55,10 +49,10 @@ func (b *batch) Reset() {
 	b.files = make([]string, 0)
 	b.size = 0
 }
-func Mailer(wg *sync.WaitGroup, options MailOptions) {
+func Uploader(wg *sync.WaitGroup, options MailOptions) {
 	defer wg.Done()
 	for {
-		files, err := listFiles(options.FileSuffix, options.BaseFolder)
+		files, err := ListFiles(options.FileSuffix, options.BaseFolder)
 		if err != nil {
 			log.Printf("failed to list files. Caused by '%s'", err)
 		} else {
@@ -103,27 +97,4 @@ func sendMail(options MailOptions, attachments []string) {
 	if err := gomail.Send(s, m); err != nil {
 		log.Printf("could not send email. Caused by '%v'", err)
 	}
-}
-
-func listFiles(suffixes []string, basePath string) ([]fileInfo, error) {
-	infos, err := ioutil.ReadDir(basePath)
-	if err != nil {
-		return nil, err
-	}
-	var files []fileInfo
-	for _, info := range infos {
-		if info.Size() > 0 && matchSuffix(suffixes, info.Name()) {
-			files = append(files, fileInfo{path: filepath.Join(basePath, info.Name()), size: info.Size()})
-		}
-	}
-	return files, nil
-}
-
-func matchSuffix(suffixes []string, fileName string) bool {
-	for _, suffix := range suffixes {
-		if strings.HasSuffix(fileName, suffix) {
-			return true
-		}
-	}
-	return false
 }
