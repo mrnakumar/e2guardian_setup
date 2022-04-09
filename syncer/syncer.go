@@ -14,22 +14,20 @@ func main() {
 	wg.Add(1)
 	go pkg.ScreenShotMaker(&wg, pkg.ScreenShotOptions{
 		Interval:         flags.ScreenShotInterval,
-		RecipientKeyPath: flags.KeyPath,
+		RecipientKeyPath: flags.HeaderKeyPath,
 		ShotsPath:        flags.ShotsFolder,
 		StorageLimit:     uint64(flags.StorageLimit),
 	})
-	go pkg.Uploader(&wg, pkg.MailOptions{
-		From:       flags.FromEmail,
-		To:         flags.ToEmail,
+	uploader := pkg.CreateUploader(pkg.UploadOptions{
+		UserName:   flags.UserName,
 		Password:   flags.Password,
-		Host:       "smtp.gmail.com",
-		Port:       25,
-		Subject:    "SHOTS",
+		Url:        flags.ServerUrl,
 		Interval:   flags.SyncInterval,
 		BaseFolder: flags.ShotsFolder,
 		FileSuffix: []string{".zip", pkg.ScreenShotSuffix},
 		SizeLimit:  gmailSizeLimit,
-	})
+	}, &wg)
+	go uploader.Worker()
 	wg.Wait()
 	log.Println("exiting")
 }

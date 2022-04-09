@@ -1,20 +1,23 @@
 package pkg
 
 import (
-	"gopkg.in/gomail.v2"
+	"bytes"
+	"fmt"
+	"io"
+	"io/ioutil"
 	"log"
+	"mime/multipart"
+	"net/http"
 	"os"
+	"path/filepath"
 	"sync"
 	"time"
 )
 
-type MailOptions struct {
-	From       string
-	To         string
+type UploadOptions struct {
+	UserName   string
 	Password   string
-	Host       string
-	Port       int
-	Subject    string
+	Url        string
 	Interval   uint16
 	BaseFolder string
 	FileSuffix []string
@@ -22,12 +25,26 @@ type MailOptions struct {
 	filePath   string
 }
 
-
-
 type batch struct {
 	files []string
 	size  int64
 	limit int64
+}
+
+type Uploader struct {
+	options     UploadOptions
+	wg          *sync.WaitGroup
+	client      *http.Client
+	contentType string
+}
+
+func CreateUploader(options UploadOptions, wg *sync.WaitGroup) Uploader {
+	return Uploader{
+		options:     options,
+		wg:          wg,
+		client:      &http.Client{},
+		contentType: "multipart/form-data",
+	}
 }
 
 func (b *batch) Add(file fileInfo) bool {
@@ -49,21 +66,22 @@ func (b *batch) Reset() {
 	b.files = make([]string, 0)
 	b.size = 0
 }
-func Uploader(wg *sync.WaitGroup, options MailOptions) {
-	defer wg.Done()
+
+func (u Uploader) Worker() {
+	defer u.wg.Done()
 	for {
-		files, err := ListFiles(options.FileSuffix, options.BaseFolder)
+		files, err := ListFiles(u.options.FileSuffix, u.options.BaseFolder)
 		if err != nil {
 			log.Printf("failed to list files. Caused by '%s'", err)
 		} else {
 			batch := batch{
 				files: make([]string, 0),
 				size:  0,
-				limit: options.SizeLimit,
+				limit: u.options.SizeLimit,
 			}
 			for _, file := range files {
 				if !batch.Add(file) {
-					sendMail(options, batch.files)
+					u.upload(batch.files)
 					batch.Reset()
 					if !batch.Add(file) {
 						// single file exceeds the size limit. log and delete
@@ -76,25 +94,55 @@ func Uploader(wg *sync.WaitGroup, options MailOptions) {
 				}
 			}
 		}
-		time.Sleep(time.Second * time.Duration(options.Interval))
+		time.Sleep(time.Second * time.Duration(u.options.Interval))
 	}
 }
 
-func sendMail(options MailOptions, attachments []string) {
-	d := gomail.NewDialer(options.Host, options.Port, options.From, options.Password)
-	s, err := d.Dial()
+func (u Uploader) upload(shots []string) {
+	for _, shot := range shots {
+		u.uploadOne(shot)
+	}
+}
+
+func (u Uploader) uploadOne(shotPath string) {
+	var b bytes.Buffer
+	w := multipart.NewWriter(&b)
+	defer func(w *multipart.Writer) {
+		_ = w.Close()
+	}(w)
+	shotName := filepath.Dir(shotPath)
+	fw, err := w.CreateFormFile("file", shotName)
 	if err != nil {
-		log.Printf("failed to connect to gmail. Calused by '%v'", err)
+		fmt.Printf("failed to create form with file '%s'. caused by: '%s'", shotName, err)
 		return
 	}
-	m := gomail.NewMessage()
-	m.SetHeader("From", options.From)
-	m.SetHeader("To", options.To)
-	m.SetHeader("Subject", options.Subject)
-	for _, attachment := range attachments {
-		m.Attach(attachment)
+	fileHandle, err := os.Open(shotPath)
+	if err != nil {
+		fmt.Printf("failed to open shot file '%s'. caused by: '%s'", shotPath, err)
+		return
 	}
-	if err := gomail.Send(s, m); err != nil {
-		log.Printf("could not send email. Caused by '%v'", err)
+	if _, err = io.Copy(fw, fileHandle); err != nil {
+		fmt.Printf("failed to copy contnts of shot '%s' to form. caused by: '%s'", shotPath, err)
+		return
+	}
+	u.httpSend(&b)
+}
+
+func (u Uploader) httpSend(data *bytes.Buffer) {
+	url := u.options.Url
+	req, err := http.NewRequest("POST", url, data)
+	if err != nil {
+		fmt.Printf("failed to create POST request for url '%s'. Caused by: '%v'", url, err)
+		return
+	}
+	req.Header.Set("Content-Type", u.contentType)
+	res, err := u.client.Do(req)
+	if err != nil {
+		fmt.Printf("failed to upload. Caused by: '%v'", err)
+	}
+	if res.StatusCode != http.StatusOK {
+		defer res.Body.Close()
+		respBody, _ := ioutil.ReadAll(res.Body)
+		fmt.Printf("got not ok from server: '%s'. response body is: '%s' ", res.Status, string(respBody))
 	}
 }

@@ -12,10 +12,11 @@ import (
 type ParsedFlag struct {
 	ScreenShotInterval uint16
 	SyncInterval       uint16
-	FromEmail          string
+	ServerUrl          string
+	UserName           string
 	Password           string
-	ToEmail            string
-	KeyPath            string
+	HeaderKeyPath      string
+	ShotKeyPath        string
 	ShotsFolder        string
 	StorageLimit       uint16
 }
@@ -33,10 +34,11 @@ func ParseFlags() ParsedFlag {
 	var screenShotInterval uint16 = 0
 	var syncInterval uint16
 	var storageLimit uint16
-	var fromEmail string
+	var serverUrl string
+	var userName string
 	var password string
-	var toEmail string
-	var keyPath string
+	var HeaderKeyPath string
+	var ShotKeyPath string
 	var shotsFolder string
 	flagInfos := []*flagInfo{
 		{
@@ -61,18 +63,18 @@ func ParseFlags() ParsedFlag {
 			provide:      asUin16(&storageLimit),
 		},
 		{
-			name:         "from_email",
-			usage:        "Sender email address",
+			name:         "userName",
+			usage:        "Sender user name (as expected by server)",
 			userSupplied: nil,
 			validation:   emptyCheck,
-			provide:      asBase64Decode(&fromEmail),
+			provide:      asBase64Decode(&userName),
 		},
 		{
-			name:         "to_email",
-			usage:        "Receiver email address",
+			name:         "server_url",
+			usage:        "Server url to post shots to",
 			userSupplied: nil,
 			validation:   emptyCheck,
-			provide:      asBase64Decode(&toEmail),
+			provide:      asBase64Decode(&serverUrl),
 		},
 		{
 			name:         "gate",
@@ -82,11 +84,18 @@ func ParseFlags() ParsedFlag {
 			provide:      asPassword(&password),
 		},
 		{
-			name:         "keyPath",
+			name:         "ShotKeyPath",
 			usage:        "Recipient's public key path",
 			userSupplied: nil,
 			validation:   checkPathExists,
-			provide:      asBase64Decode(&keyPath),
+			provide:      asBase64Decode(&ShotKeyPath),
+		},
+		{
+			name:         "HeaderKeyPath",
+			usage:        "Recipient's public key path",
+			userSupplied: nil,
+			validation:   checkPathExists,
+			provide:      asBase64Decode(&HeaderKeyPath),
 		},
 		{
 			name:         "shots",
@@ -105,10 +114,11 @@ func ParseFlags() ParsedFlag {
 	return ParsedFlag{
 		ScreenShotInterval: screenShotInterval,
 		SyncInterval:       syncInterval,
-		FromEmail:          fromEmail,
+		UserName:           userName,
+		ServerUrl:          serverUrl,
 		Password:           password,
-		ToEmail:            toEmail,
-		KeyPath:            keyPath,
+		HeaderKeyPath:      HeaderKeyPath,
+		ShotKeyPath:        ShotKeyPath,
 		ShotsFolder:        shotsFolder,
 		StorageLimit:       storageLimit,
 	}
