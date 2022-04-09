@@ -2,9 +2,9 @@ package pkg
 
 import (
 	"bytes"
-	"encoding/base64"
 	"filippo.io/age"
 	"fmt"
+	"github.com/mrnakumar/e2g_utils"
 	"io"
 	"io/ioutil"
 	"log"
@@ -22,7 +22,7 @@ func CreateDecoder(privateKeyFilePath string) (Decoder, error) {
 	}
 
 	trimmed := strings.TrimSuffix(string(privateKey), "\n")
-	decoded, err := decode(trimmed)
+	decoded, err := e2g_utils.Base64Decode(trimmed)
 	if err != nil {
 		return Decoder{}, err
 	}
@@ -43,12 +43,4 @@ func (e Decoder) Decrypt(data string) ([]byte, error) {
 		return nil, fmt.Errorf("failed to decrypt")
 	}
 	return out.Bytes(), nil
-}
-
-func decode(input string) (string, error) {
-	decoded, err := base64.StdEncoding.DecodeString(input)
-	if err != nil {
-		return "", fmt.Errorf("failed to decode identity file content")
-	}
-	return string(decoded), nil
 }

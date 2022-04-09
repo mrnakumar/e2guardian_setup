@@ -2,8 +2,8 @@ package pkg
 
 import (
 	"flag"
+	"github.com/mrnakumar/e2g_utils"
 	"log"
-	"os"
 	"strings"
 )
 
@@ -34,21 +34,10 @@ func ParseFlags() ParsedFlag {
 		log.Fatalf("flag '%s' is required", domainFlag)
 	}
 	return ParsedFlag{
-		BasePath:         validatePath(basePath, basePathFlag),
-		Domain:           domainTrimmed,
-		UserName:         *user,
-		Password:         *password,
-		IdentityFilePath: validatePath(identityFilePath, identityFilePathFlag),
+		BasePath:         e2g_utils.ValidatePath(basePath, basePathFlag),
+		Domain:           e2g_utils.Base64DecodeWithKill(domainTrimmed),
+		UserName:         e2g_utils.Base64DecodeWithKill(*user),
+		Password:         e2g_utils.ParsePassword(*password),
+		IdentityFilePath: e2g_utils.ValidatePath(identityFilePath, identityFilePathFlag),
 	}
-}
-
-func validatePath(path *string, flag string) string {
-	trimmed := strings.TrimSpace(*path)
-	if len(trimmed) == 0 {
-		log.Fatalf("flag '%s' is required", flag)
-	}
-	if _, err := os.Stat(trimmed); os.IsNotExist(err) {
-		log.Fatalf("invalid '%s'. Path '%s' does not exist.", flag, trimmed)
-	}
-	return trimmed
 }
