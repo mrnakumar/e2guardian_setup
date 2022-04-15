@@ -6,7 +6,7 @@ require (
 	filippo.io/age v1.0.0
 	github.com/gin-gonic/autotls v0.0.3
 	github.com/gin-gonic/gin v1.7.7
-	github.com/mrnakumar/e2g_utils v1.0.1
+	github.com/mrnakumar/e2g_utils v1.2.0
 )
 
 require (
