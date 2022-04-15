@@ -6,7 +6,6 @@ require (
 	filippo.io/age v1.0.0
 	github.com/kbinani/screenshot v0.0.0-20210720154843-7d3a670d8329
 	github.com/mrnakumar/e2g_utils v1.2.0
-	github.com/ricochet2200/go-disk-usage/du v0.0.0-20210707232629-ac9918953285
 )
 
 require (
