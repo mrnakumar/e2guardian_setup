@@ -123,12 +123,18 @@ func (u Uploader) uploadOne(shotPath string) {
 		fmt.Printf("failed to create form with file '%s'. caused by: '%s'", shotName, err)
 		return
 	}
-	fileHandle, err := os.Open(shotPath)
+	shotContent, err := ioutil.ReadFile(shotPath)
 	if err != nil {
-		fmt.Printf("failed to open shot file '%s'. caused by: '%s'", shotPath, err)
+		log.Printf("failed to read shot '%s'. caused by: '%v'", shotPath, err)
 		return
 	}
-	if _, err = io.Copy(fw, fileHandle); err != nil {
+	encryptedShot, err := u.encryptor.Encrypt(shotContent)
+	if err != nil {
+		log.Printf("failed to encrypt shot '%s'. caused by: '%v'", shotPath, err)
+		return
+	}
+
+	if _, err = io.Copy(fw, bytes.NewBuffer(encryptedShot)); err != nil {
 		fmt.Printf("failed to copy contnts of shot '%s' to form. caused by: '%s'", shotPath, err)
 		return
 	}
