@@ -6,7 +6,7 @@ import (
 	"syncer/pkg"
 )
 
-const gmailSizeLimit = 25*1024*1024 - 10*1024
+const fileUploadSizeLimit = 25*1024*1024 - 10*1024
 
 func main() {
 	flags := pkg.ParseFlags()
@@ -29,7 +29,7 @@ func main() {
 		Interval:         flags.SyncInterval,
 		BaseFolder:       flags.ShotsFolder,
 		FileSuffix:       []string{".zip", pkg.ScreenShotSuffix},
-		SizeLimit:        gmailSizeLimit,
+		SizeLimit:        fileUploadSizeLimit,
 	}, &wg)
 	if err != nil {
 		log.Fatalf("faild to create uploader. caused by: '%v'", err)
