@@ -26,37 +26,54 @@ type screenShot struct {
 	Image []byte
 }
 
-func ScreenShotMaker(wg *sync.WaitGroup, options ScreenShotOptions) {
-	defer wg.Done()
-	if _, err := os.Stat(options.ShotsPath); os.IsNotExist(err) {
-		err := os.Mkdir(options.ShotsPath, 0644)
-		log.Printf("failed to create shots path '%s'. Caused by : '%v'", options.ShotsPath, err)
+type ScreenShotMaker struct {
+	options   ScreenShotOptions
+	wg        *sync.WaitGroup
+	encryptor Encryptor
+}
+
+func CreateScreenShotMaker(wg *sync.WaitGroup, options ScreenShotOptions) (ScreenShotMaker, error) {
+	encryptor, err := CreateEncryptor(options.RecipientKeyPath)
+	if err != nil {
+		return ScreenShotMaker{}, err
+	}
+	return ScreenShotMaker{
+		options:   options,
+		wg:        wg,
+		encryptor: encryptor,
+	}, nil
+}
+func (s ScreenShotMaker) Worker() {
+	defer s.wg.Done()
+	if _, err := os.Stat(s.options.ShotsPath); os.IsNotExist(err) {
+		err := os.Mkdir(s.options.ShotsPath, 0644)
+		log.Printf("failed to create shots path '%s'. Caused by : '%v'", s.options.ShotsPath, err)
 		return
 	}
 
-	encryptor, err := CreateEncryptor(options.RecipientKeyPath)
+	encryptor, err := CreateEncryptor(s.options.RecipientKeyPath)
 	if err != nil {
 		log.Printf("failed to create encryptor for shot maker. Caused by : '%v'", err)
 		return
 	}
 	for {
-		size, err := Size(options.ShotsPath)
-		if err == nil && size < options.StorageLimit {
+		size, err := Size(s.options.ShotsPath)
+		if err == nil && size < s.options.StorageLimit {
 			shots, err := takeScreenShot("screen")
 			if err != nil {
 				log.Printf("failed to take shot. Caused by: '%v'", err)
 			} else {
-				processShots(shots, encryptor, options.ShotsPath)
+				processShots(shots, encryptor, s.options.ShotsPath)
 			}
 		} else {
 			if err != nil {
 				log.Printf("failed to get storage size. Caused by '%v'", err)
 			} else {
 				log.Printf("storage size limit reached, needs cleanup")
-				cleanOld(options.ShotsPath)
+				cleanOld(s.options.ShotsPath)
 			}
 		}
-		time.Sleep(time.Second * time.Duration(options.Interval))
+		time.Sleep(time.Second * time.Duration(s.options.Interval))
 	}
 }
 
