@@ -1,8 +1,8 @@
 package pkg
 
 import (
-	"encoding/base64"
 	"flag"
+	"github.com/mrnakumar/e2g_utils"
 	"log"
 	"os"
 	"strconv"
@@ -50,7 +50,7 @@ func ParseFlags() ParsedFlag {
 		},
 		{
 			name:         "sync_interval",
-			usage:        "Sync interval in seconds. Must be greater than 10. Recommended at least 300",
+			usage:        "Sync interval in seconds. Must be greater than 10.",
 			userSupplied: nil,
 			validation:   checkUnsigned16,
 			provide:      asUin16(&syncInterval),
@@ -63,7 +63,7 @@ func ParseFlags() ParsedFlag {
 			provide:      asUin16(&storageLimit),
 		},
 		{
-			name:         "userName",
+			name:         "user_name",
 			usage:        "Sender user name (as expected by server)",
 			userSupplied: nil,
 			validation:   emptyCheck,
@@ -84,14 +84,14 @@ func ParseFlags() ParsedFlag {
 			provide:      asPassword(&password),
 		},
 		{
-			name:         "ShotKeyPath",
+			name:         "shot_key_path",
 			usage:        "Recipient's public key path",
 			userSupplied: nil,
 			validation:   checkPathExists,
 			provide:      asBase64Decode(&ShotKeyPath),
 		},
 		{
-			name:         "HeaderKeyPath",
+			name:         "header_key_path",
 			usage:        "Recipient's public key path",
 			userSupplied: nil,
 			validation:   checkPathExists,
@@ -144,7 +144,7 @@ func checkUnsigned16(input *flagInfo) {
 }
 
 func checkPathExists(input *flagInfo) {
-	decoded := decode(input)
+	decoded := e2g_utils.Base64DecodeWithKill(*input.userSupplied, input.name)
 	if _, err := os.Stat(decoded); os.IsNotExist(err) {
 		log.Fatalf("invalid '%s' '%s'. Path does not exist.", input.name, decoded)
 	}
@@ -159,40 +159,16 @@ func asUin16(target *uint16) func(*flagInfo) {
 
 func asBase64Decode(target *string) func(*flagInfo) {
 	return func(input *flagInfo) {
-		*target = decode(input)
+		decoded, err := e2g_utils.Base64Decode(*input.userSupplied)
+		if err != nil {
+			log.Fatalf("failed to decode '%s'", input.name)
+		}
+		*target = decoded
 	}
 }
 
 func asPassword(target *string) func(info *flagInfo) {
 	return func(input *flagInfo) {
-		str := decode(input)
-		output := reverse(str)
-		*target = output
+		*target = e2g_utils.ParsePassword(*input.userSupplied, input.name)
 	}
-}
-
-func decode(input *flagInfo) string {
-	decoded, err := base64.StdEncoding.DecodeString(*input.userSupplied)
-	if err != nil {
-		log.Fatalf("failed to decode '%s'", input.name)
-	}
-	return string(decoded)
-}
-
-func reverse(str string) string {
-	// Get Unicode code points.
-	n := 0
-	runes := make([]rune, len(str))
-	for _, r := range str {
-		runes[n] = r
-		n++
-	}
-	runes = runes[0:n]
-	// Reverse
-	for i := 0; i < n/2; i++ {
-		runes[i], runes[n-1-i] = runes[n-1-i], runes[i]
-	}
-	// Convert back to UTF-8.
-	output := string(runes)
-	return output
 }

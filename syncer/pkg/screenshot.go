@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/kbinani/screenshot"
+	"github.com/mrnakumar/e2g_utils"
 	"image/png"
 	"io/ioutil"
 	"log"
@@ -42,7 +43,12 @@ func ScreenShotMaker(wg *sync.WaitGroup, options ScreenShotOptions) {
 	}
 
 	recipient := string(recipientKey)
-	encryptor, err := CreateEncryptor(strings.TrimSuffix(recipient, "\n"))
+	decoded, err := e2g_utils.Base64Decode( strings.TrimSuffix(recipient, "\n"))
+	if err != nil {
+		log.Printf("failed to decode recepient key path. Caused by: '%v'", err)
+		return
+	}
+	encryptor, err := CreateEncryptor(decoded)
 
 	if err != nil {
 		log.Printf("failed to create encryptor. Caused by : '%v'", err)
