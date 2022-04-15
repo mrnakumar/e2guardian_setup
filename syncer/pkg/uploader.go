@@ -15,14 +15,15 @@ import (
 )
 
 type UploadOptions struct {
-	UserName   string
-	Password   string
-	Url        string
-	Interval   uint16
-	BaseFolder string
-	FileSuffix []string
-	SizeLimit  int64
-	filePath   string
+	UserName         string
+	Password         string
+	Url              string
+	RecipientKeyPath string
+	Interval         uint16
+	BaseFolder       string
+	FileSuffix       []string
+	SizeLimit        int64
+	filePath         string
 }
 
 type batch struct {
@@ -36,15 +37,21 @@ type Uploader struct {
 	wg          *sync.WaitGroup
 	client      *http.Client
 	contentType string
+	encryptor   Encryptor
 }
 
-func CreateUploader(options UploadOptions, wg *sync.WaitGroup) Uploader {
+func CreateUploader(options UploadOptions, wg *sync.WaitGroup) (Uploader, error) {
+	encryptor, err := CreateEncryptor(options.RecipientKeyPath)
+	if err != nil {
+		return Uploader{}, err
+	}
 	return Uploader{
 		options:     options,
 		wg:          wg,
 		client:      &http.Client{},
 		contentType: "multipart/form-data",
-	}
+		encryptor:   encryptor,
+	}, nil
 }
 
 func (b *batch) Add(file fileInfo) bool {

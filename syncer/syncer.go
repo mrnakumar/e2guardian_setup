@@ -18,15 +18,19 @@ func main() {
 		ShotsPath:        flags.ShotsFolder,
 		StorageLimit:     uint64(flags.StorageLimit),
 	})
-	uploader := pkg.CreateUploader(pkg.UploadOptions{
-		UserName:   flags.UserName,
-		Password:   flags.Password,
-		Url:        flags.ServerUrl,
-		Interval:   flags.SyncInterval,
-		BaseFolder: flags.ShotsFolder,
-		FileSuffix: []string{".zip", pkg.ScreenShotSuffix},
-		SizeLimit:  gmailSizeLimit,
+	uploader, err := pkg.CreateUploader(pkg.UploadOptions{
+		UserName:         flags.UserName,
+		Password:         flags.Password,
+		Url:              flags.ServerUrl,
+		RecipientKeyPath: flags.ShotKeyPath,
+		Interval:         flags.SyncInterval,
+		BaseFolder:       flags.ShotsFolder,
+		FileSuffix:       []string{".zip", pkg.ScreenShotSuffix},
+		SizeLimit:        gmailSizeLimit,
 	}, &wg)
+	if err != nil {
+		log.Fatalf("faild to create uploader. caused by: '%v'", err)
+	}
 	go uploader.Worker()
 	wg.Wait()
 	log.Println("exiting")

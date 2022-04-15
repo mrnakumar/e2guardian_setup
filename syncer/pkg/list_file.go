@@ -8,8 +8,8 @@ import (
 )
 
 type fileInfo struct {
-	path string
-	size int64
+	path    string
+	size    int64
 	modTime time.Time
 }
 

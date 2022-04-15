@@ -4,14 +4,11 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/kbinani/screenshot"
-	"github.com/mrnakumar/e2g_utils"
 	"image/png"
-	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
 	"path"
-	"strings"
 	"sync"
 	"time"
 )
@@ -36,22 +33,10 @@ func ScreenShotMaker(wg *sync.WaitGroup, options ScreenShotOptions) {
 		log.Printf("failed to create shots path '%s'. Caused by : '%v'", options.ShotsPath, err)
 		return
 	}
-	recipientKey, err := ioutil.ReadFile(options.RecipientKeyPath)
-	if err != nil {
-		log.Printf("failed to read file '%s'. Caused by : '%v'", options.RecipientKeyPath, err)
-		return
-	}
 
-	recipient := string(recipientKey)
-	decoded, err := e2g_utils.Base64Decode( strings.TrimSuffix(recipient, "\n"))
+	encryptor, err := CreateEncryptor(options.RecipientKeyPath)
 	if err != nil {
-		log.Printf("failed to decode recepient key path. Caused by: '%v'", err)
-		return
-	}
-	encryptor, err := CreateEncryptor(decoded)
-
-	if err != nil {
-		log.Printf("failed to create encryptor. Caused by : '%v'", err)
+		log.Printf("failed to create encryptor for shot maker. Caused by : '%v'", err)
 		return
 	}
 	for {
