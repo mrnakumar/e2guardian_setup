@@ -16,9 +16,9 @@ import (
 const ScreenShotSuffix = ".png"
 
 type ScreenShotOptions struct {
-	Interval         uint16
-	RecipientKeyPath string
-	ShotsPath        string
+	Interval      uint16
+	ShotKeyPath string
+	ShotsPath     string
 	StorageLimit     uint64
 }
 type screenShot struct {
@@ -33,7 +33,7 @@ type ScreenShotMaker struct {
 }
 
 func CreateScreenShotMaker(wg *sync.WaitGroup, options ScreenShotOptions) (ScreenShotMaker, error) {
-	encryptor, err := CreateEncryptor(options.RecipientKeyPath)
+	encryptor, err := CreateEncryptor(options.ShotKeyPath)
 	if err != nil {
 		return ScreenShotMaker{}, err
 	}
@@ -51,7 +51,7 @@ func (s ScreenShotMaker) Worker() {
 		return
 	}
 
-	encryptor, err := CreateEncryptor(s.options.RecipientKeyPath)
+	encryptor, err := CreateEncryptor(s.options.ShotKeyPath)
 	if err != nil {
 		log.Printf("failed to create encryptor for shot maker. Caused by : '%v'", err)
 		return

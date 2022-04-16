@@ -15,15 +15,15 @@ import (
 )
 
 type UploadOptions struct {
-	UserName         string
-	Password         string
-	Url              string
-	RecipientKeyPath string
-	Interval         uint16
-	BaseFolder       string
-	FileSuffix       []string
-	SizeLimit        int64
-	filePath         string
+	UserName      string
+	Password      string
+	Url           string
+	HeaderKeyPath string
+	Interval      uint16
+	BaseFolder    string
+	FileSuffix    []string
+	SizeLimit     int64
+	filePath      string
 }
 
 type batch struct {
@@ -41,7 +41,7 @@ type Uploader struct {
 }
 
 func CreateUploader(options UploadOptions, wg *sync.WaitGroup) (Uploader, error) {
-	encryptor, err := CreateEncryptor(options.RecipientKeyPath)
+	encryptor, err := CreateEncryptor(options.HeaderKeyPath)
 	if err != nil {
 		return Uploader{}, err
 	}
@@ -128,13 +128,8 @@ func (u Uploader) uploadOne(shotPath string) {
 		log.Printf("failed to read shot '%s'. caused by: '%v'", shotPath, err)
 		return
 	}
-	encryptedShot, err := u.encryptor.Encrypt(shotContent)
-	if err != nil {
-		log.Printf("failed to encrypt shot '%s'. caused by: '%v'", shotPath, err)
-		return
-	}
 
-	if _, err = io.Copy(fw, bytes.NewBuffer(encryptedShot)); err != nil {
+	if _, err = io.Copy(fw, bytes.NewBuffer(shotContent)); err != nil {
 		fmt.Printf("failed to copy contnts of shot '%s' to form. caused by: '%s'", shotPath, err)
 		return
 	}
@@ -149,6 +144,12 @@ func (u Uploader) httpSend(data *bytes.Buffer) {
 		return
 	}
 	req.Header.Set("Content-Type", u.contentType)
+	authHeader, err := u.encryptor.Encrypt([]byte(fmt.Sprintf("%s:%s", u.options.UserName, u.options.Password)))
+	if err != nil {
+		fmt.Printf("failed to encrypt auth header to request for url '%s'. Caused by: '%v'", url, err)
+		return
+	}
+	req.Header.Set("Authorization", string(authHeader))
 	res, err := u.client.Do(req)
 	if err != nil {
 		fmt.Printf("failed to upload. Caused by: '%v'", err)
@@ -157,5 +158,7 @@ func (u Uploader) httpSend(data *bytes.Buffer) {
 		defer res.Body.Close()
 		respBody, _ := ioutil.ReadAll(res.Body)
 		fmt.Printf("got not ok from server: '%s'. response body is: '%s' ", res.Status, string(respBody))
+	} else {
+		fmt.Printf("got '%s' from server", res.StatusCode)
 	}
 }
