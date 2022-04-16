@@ -13,6 +13,7 @@ type ParsedFlag struct {
 	UserName         string
 	Password         string
 	IdentityFilePath string
+	DevelopMode      bool
 }
 
 func ParseFlags() ParsedFlag {
@@ -21,11 +22,13 @@ func ParseFlags() ParsedFlag {
 	userNameFlag := "user_name"
 	passwordFlag := "password"
 	identityFilePathFlag := "identity_file_path"
+	developModeFlag := "develop_mode"
 	basePath := flag.String(basePathFlag, "", "Base folder path to store data")
 	domain := flag.String(domainFlag, "", "Domain name to serve")
 	user := flag.String(userNameFlag, "", "Username")
 	password := flag.String(passwordFlag, "", "Password")
 	identityFilePath := flag.String(identityFilePathFlag, "", "Identity (X25519) private key file path")
+	developMode := flag.String(developModeFlag, "true", "Run the server in develop mode.[true | false] Default is true")
 
 	flag.Parse()
 
@@ -39,5 +42,6 @@ func ParseFlags() ParsedFlag {
 		UserName:         e2g_utils.Base64DecodeWithKill(*user, userNameFlag),
 		Password:         e2g_utils.ParsePassword(*password, passwordFlag),
 		IdentityFilePath: e2g_utils.ValidatePath(identityFilePath, identityFilePathFlag),
+		DevelopMode:      *developMode == "true",
 	}
 }

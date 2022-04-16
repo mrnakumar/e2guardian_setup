@@ -3,6 +3,7 @@ package pkg
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/mrnakumar/e2g_utils"
 	"log"
 	"math/rand"
 	"net/http"
@@ -14,7 +15,12 @@ import (
 func FileHandler(decoder Decoder, basePath string, eKey string, ePassword string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
-		authHeaderDecoded, err := decoder.Decrypt(authHeader)
+		decodedHeader, err := e2g_utils.Base64Decode(authHeader)
+		if err != nil {
+			c.String(http.StatusBadRequest, "Invalid encoding")
+			return
+		}
+		authHeaderDecoded, err := decoder.Decrypt(decodedHeader)
 		if err != nil {
 			c.String(http.StatusUnauthorized, "Invalid auth")
 			return
@@ -25,6 +31,7 @@ func FileHandler(decoder Decoder, basePath string, eKey string, ePassword string
 			c.String(http.StatusUnauthorized, "")
 			return
 		}
+
 		file, _ := c.FormFile("file")
 		if file == nil {
 			log.Printf("missing file")

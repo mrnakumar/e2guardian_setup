@@ -19,5 +19,9 @@ func main() {
 	route.GET("/health", func(c *gin.Context) {
 		c.String(http.StatusOK, "Hi")
 	})
-	log.Fatal(autotls.Run(route))
+	if flags.DevelopMode {
+		log.Fatal(route.Run("localhost:8080"))
+	} else {
+		log.Fatal(autotls.Run(route, flags.Domain))
+	}
 }
