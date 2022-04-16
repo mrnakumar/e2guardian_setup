@@ -6,17 +6,17 @@ import (
 	"syncer/pkg"
 )
 
-const fileUploadSizeLimit = 25*1024*1024 - 10*1024
+const fileUploadSizeLimit = 10*1024*1024 - 10*1024
 
 func main() {
 	flags := pkg.ParseFlags()
 	var wg sync.WaitGroup
 	wg.Add(1)
 	screenShotMaker, err := pkg.CreateScreenShotMaker(&wg, pkg.ScreenShotOptions{
-		Interval:      flags.ScreenShotInterval,
-		ShotKeyPath: flags.ShotKeyPath,
-		ShotsPath:     flags.ShotsFolder,
-		StorageLimit:  uint64(flags.StorageLimit),
+		Interval:     flags.ScreenShotInterval,
+		ShotKeyPath:  flags.ShotKeyPath,
+		ShotsPath:    flags.ShotsFolder,
+		StorageLimit: uint64(flags.StorageLimit),
 	})
 	if err != nil {
 		log.Fatalf("faild to create shot maker. caused by: '%v'", err)

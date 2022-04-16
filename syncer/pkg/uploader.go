@@ -3,6 +3,7 @@ package pkg
 import (
 	"bytes"
 	"fmt"
+	"github.com/mrnakumar/e2g_utils"
 	"io"
 	"io/ioutil"
 	"log"
@@ -24,12 +25,6 @@ type UploadOptions struct {
 	FileSuffix    []string
 	SizeLimit     int64
 	filePath      string
-}
-
-type batch struct {
-	files []string
-	size  int64
-	limit int64
 }
 
 type Uploader struct {
@@ -54,26 +49,6 @@ func CreateUploader(options UploadOptions, wg *sync.WaitGroup) (Uploader, error)
 	}, nil
 }
 
-func (b *batch) Add(file fileInfo) bool {
-	if b.size+file.size < b.limit {
-		b.files = append(b.files, file.path)
-		b.size += file.size
-		return true
-	}
-	return false
-}
-
-func (b *batch) Reset() {
-	for _, file := range b.files {
-		err := os.Remove(file)
-		if err != nil {
-			log.Printf("failed to delete file from batch. Caused by '%v'", err)
-		}
-	}
-	b.files = make([]string, 0)
-	b.size = 0
-}
-
 func (u Uploader) Worker() {
 	defer u.wg.Done()
 	for {
@@ -81,23 +56,15 @@ func (u Uploader) Worker() {
 		if err != nil {
 			log.Printf("failed to list files. Caused by '%s'", err)
 		} else {
-			batch := batch{
-				files: make([]string, 0),
-				size:  0,
-				limit: u.options.SizeLimit,
-			}
 			for _, file := range files {
-				if !batch.Add(file) {
-					u.upload(batch.files)
-					batch.Reset()
-					if !batch.Add(file) {
-						// single file exceeds the size limit. log and delete
-						log.Printf("file too large. Size is '%d'", file.size)
-						err = os.Remove(file.path)
-						if err != nil {
-							log.Printf("file too delete file. caused by '%v'", err)
-						}
+				if file.size > u.options.SizeLimit {
+					log.Printf("the file '%s' is larger than allowed size '%d' large. deleting it.", file.path, u.options.SizeLimit)
+					err = os.Remove(file.path)
+					if err != nil {
+						log.Printf("filed to delete file. caused by '%v'", err)
 					}
+				} else {
+					u.uploadOne(file.path)
 				}
 			}
 		}
@@ -105,60 +72,64 @@ func (u Uploader) Worker() {
 	}
 }
 
-func (u Uploader) upload(shots []string) {
-	for _, shot := range shots {
-		u.uploadOne(shot)
+func (u Uploader) uploadOne(shotPath string) {
+	b, contentType, ok := u.makeBody(shotPath)
+	if ok {
+		u.httpSend(b, contentType)
 	}
 }
 
-func (u Uploader) uploadOne(shotPath string) {
+func (u Uploader) makeBody(shotPath string) (*bytes.Buffer, string, bool) {
 	var b bytes.Buffer
 	w := multipart.NewWriter(&b)
 	defer func(w *multipart.Writer) {
 		_ = w.Close()
 	}(w)
-	shotName := filepath.Dir(shotPath)
-	fw, err := w.CreateFormFile("file", shotName)
-	if err != nil {
-		fmt.Printf("failed to create form with file '%s'. caused by: '%s'", shotName, err)
-		return
-	}
+
 	shotContent, err := ioutil.ReadFile(shotPath)
 	if err != nil {
 		log.Printf("failed to read shot '%s'. caused by: '%v'", shotPath, err)
-		return
+		return &bytes.Buffer{}, "", false
+	}
+	shotName := filepath.Dir(shotPath)
+	fw, err := w.CreateFormFile("file", shotName)
+	if err != nil {
+		log.Printf("failed to create form with file '%s'. caused by: '%s'", shotName, err)
+		return &bytes.Buffer{}, "", false
 	}
 
 	if _, err = io.Copy(fw, bytes.NewBuffer(shotContent)); err != nil {
-		fmt.Printf("failed to copy contnts of shot '%s' to form. caused by: '%s'", shotPath, err)
-		return
+		log.Printf("failed to copy contnts of shot '%s' to form. caused by: '%s'", shotPath, err)
+		return &bytes.Buffer{}, "", false
 	}
-	u.httpSend(&b)
+
+	return &b, w.FormDataContentType(), true
 }
 
-func (u Uploader) httpSend(data *bytes.Buffer) {
+func (u Uploader) httpSend(data *bytes.Buffer, contentType string) {
 	url := u.options.Url
 	req, err := http.NewRequest("POST", url, data)
 	if err != nil {
-		fmt.Printf("failed to create POST request for url '%s'. Caused by: '%v'", url, err)
+		log.Printf("failed to create POST request for url '%s'. Caused by: '%v'", url, err)
 		return
 	}
-	req.Header.Set("Content-Type", u.contentType)
+	req.Header.Set("Content-Type", contentType)
 	authHeader, err := u.encryptor.Encrypt([]byte(fmt.Sprintf("%s:%s", u.options.UserName, u.options.Password)))
 	if err != nil {
-		fmt.Printf("failed to encrypt auth header to request for url '%s'. Caused by: '%v'", url, err)
+		log.Printf("failed to encrypt auth header to request for url '%s'. Caused by: '%v'", url, err)
 		return
 	}
-	req.Header.Set("Authorization", string(authHeader))
+	encrypted := string(authHeader)
+	encoded := e2g_utils.Base64Encode(encrypted)
+	req.Header.Set("Authorization", encoded)
 	res, err := u.client.Do(req)
 	if err != nil {
-		fmt.Printf("failed to upload. Caused by: '%v'", err)
+		log.Printf("failed to upload. Caused by: '%v'", err)
+		return
 	}
 	if res.StatusCode != http.StatusOK {
 		defer res.Body.Close()
 		respBody, _ := ioutil.ReadAll(res.Body)
-		fmt.Printf("got not ok from server: '%s'. response body is: '%s' ", res.Status, string(respBody))
-	} else {
-		fmt.Printf("got '%s' from server", res.StatusCode)
+		log.Printf("got not ok from server: '%s'. response body is: '%s' ", res.Status, string(respBody))
 	}
 }

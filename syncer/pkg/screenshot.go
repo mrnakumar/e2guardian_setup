@@ -16,10 +16,10 @@ import (
 const ScreenShotSuffix = ".png"
 
 type ScreenShotOptions struct {
-	Interval      uint16
-	ShotKeyPath string
-	ShotsPath     string
-	StorageLimit     uint64
+	Interval     uint16
+	ShotKeyPath  string
+	ShotsPath    string
+	StorageLimit uint64
 }
 type screenShot struct {
 	Name  string
