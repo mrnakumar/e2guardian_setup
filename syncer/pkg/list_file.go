@@ -3,6 +3,7 @@ package pkg
 import (
 	"io/ioutil"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 )
@@ -19,6 +20,9 @@ func ListFiles(suffixes []string, basePath string) ([]fileInfo, error) {
 		return nil, err
 	}
 	var files []fileInfo
+	sort.Slice(infos, func(i, j int) bool {
+		return infos[i].ModTime().Before(infos[j].ModTime())
+	})
 	for _, info := range infos {
 		if info.Size() > 0 && matchSuffix(suffixes, info.Name()) {
 			files = append(files, fileInfo{path: filepath.Join(basePath, info.Name()), size: info.Size(), modTime: info.ModTime()})
