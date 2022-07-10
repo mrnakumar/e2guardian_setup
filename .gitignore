@@ -3,3 +3,4 @@ credentials.json
 blacklist
 venv
 .idea
+e2gserver/.DS_Store

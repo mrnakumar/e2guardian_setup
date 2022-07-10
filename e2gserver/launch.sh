@@ -4,4 +4,4 @@ go build server.go && ./server \
 -user_name="bmt1bWFy" \
 -password="cmFtdWtu" \
 -identity_file_path="L1VzZXJzL25hcmVuZHJhL3dvcmtzcGFjZS9lMmd1YXJkaWFuX3NldHVwL2UyZ3NlcnZlci9wbGF5Z3JvdW5kL2hlYWRlclByaQ==" \
-
+-storage_limit="MjA0ODA="
