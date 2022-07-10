@@ -3,35 +3,19 @@ package pkg
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/mrnakumar/e2g_utils"
 	"log"
 	"math/rand"
 	"net/http"
 	"path/filepath"
-	"strings"
 	"time"
 )
 
-func FileHandler(decoder Decoder, basePath string, eKey string, ePassword string) func(c *gin.Context) {
+func FileHandler(basePath string) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		authHeader := c.GetHeader("Authorization")
-		decodedHeader, err := e2g_utils.Base64Decode(authHeader)
-		if err != nil {
-			c.String(http.StatusBadRequest, "Invalid encoding")
-			return
-		}
-		authHeaderDecoded, err := decoder.Decrypt(decodedHeader)
-		if err != nil {
-			c.String(http.StatusUnauthorized, "Invalid auth")
-			return
-		}
-		headerParts := strings.Split(string(authHeaderDecoded), ":")
-		key, pwd := headerParts[0], headerParts[1]
-		if eKey != key || ePassword != pwd {
+		if _, failed := c.Get(AuthError); failed {
 			c.String(http.StatusUnauthorized, "")
 			return
 		}
-
 		file, _ := c.FormFile("file")
 		if file == nil {
 			log.Printf("missing file")
@@ -39,9 +23,9 @@ func FileHandler(decoder Decoder, basePath string, eKey string, ePassword string
 			return
 		}
 		now := time.Now().UnixMilli()
-		dstFileName := fmt.Sprintf("%s_%d_%d", file.Filename, now, getRandomNumber())
+		dstFileName := fmt.Sprintf("%s_%d_%d.ec", file.Filename, now, getRandomNumber())
 		dstPath := filepath.Join(basePath, dstFileName)
-		err = c.SaveUploadedFile(file, dstPath)
+		err := c.SaveUploadedFile(file, dstPath)
 		if err != nil {
 			log.Printf("failed to save file '%s'. Caused by '%v'", file.Filename, err)
 			c.String(http.StatusInternalServerError, "")

@@ -37,9 +37,36 @@ func main() {
 			time.Sleep(10 * time.Minute)
 		}
 	}()
-	route.POST("/shoot", pkg.FileHandler(decoder, flags.BasePath, flags.UserName, flags.Password))
+	authChecker := pkg.AuthChecker{
+		Decoder:  decoder,
+		UserName: flags.UserName,
+		Password: flags.Password,
+	}
+	route.POST("/shoot", authChecker.AuthCheck(), pkg.FileHandler(flags.BasePath))
 	route.GET("/health", func(c *gin.Context) {
 		c.String(http.StatusOK, "Hi")
+	})
+	route.GET("/eat", authChecker.AuthCheck(), func(c *gin.Context) {
+		if _, failed := c.Get(pkg.AuthError); failed {
+			c.String(http.StatusUnauthorized, "")
+			return
+		}
+		files, err := e2g_utils.ListFiles([]string{".ec"}, flags.BasePath)
+		if err != nil {
+			log.Printf("failed to list files. Caused by '%s'", err)
+			c.String(500, "")
+		} else {
+			if len(files) > 0 {
+				file := files[0]
+				c.File(file.Path)
+				err = os.Remove(file.Path)
+				if err != nil {
+					log.Printf("failed to delete file after giving to user. Caused by '%v'", err)
+				}
+			} else {
+				c.String(204, "")
+			}
+		}
 	})
 	if flags.DevelopMode {
 		log.Fatal(route.Run("localhost:8080"))
