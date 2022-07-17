@@ -32,11 +32,11 @@ type Uploader struct {
 	wg          *sync.WaitGroup
 	client      *http.Client
 	contentType string
-	encryptor   Encryptor
+	encryptor   e2g_utils.Encryptor
 }
 
 func CreateUploader(options UploadOptions, wg *sync.WaitGroup) (Uploader, error) {
-	encryptor, err := CreateEncryptor(options.HeaderKeyPath)
+	encryptor, err := e2g_utils.CreateEncryptor(options.HeaderKeyPath)
 	if err != nil {
 		return Uploader{}, err
 	}
@@ -52,19 +52,19 @@ func CreateUploader(options UploadOptions, wg *sync.WaitGroup) (Uploader, error)
 func (u Uploader) Worker() {
 	defer u.wg.Done()
 	for {
-		files, err := ListFiles(u.options.FileSuffix, u.options.BaseFolder)
+		files, err := e2g_utils.ListFiles(u.options.FileSuffix, u.options.BaseFolder)
 		if err != nil {
 			log.Printf("failed to list files. Caused by '%s'", err)
 		} else {
 			for _, file := range files {
-				if file.size > u.options.SizeLimit {
-					log.Printf("the file '%s' is larger than allowed size '%d' large. deleting it.", file.path, u.options.SizeLimit)
-					err = os.Remove(file.path)
+				if file.Size > u.options.SizeLimit {
+					log.Printf("the file '%s' is larger than allowed size '%d' large. deleting it.", file.Path, u.options.SizeLimit)
+					err = os.Remove(file.Path)
 					if err != nil {
 						log.Printf("filed to delete file. caused by '%v'", err)
 					}
 				} else {
-					u.uploadOne(file.path)
+					u.uploadOne(file.Path)
 				}
 			}
 		}

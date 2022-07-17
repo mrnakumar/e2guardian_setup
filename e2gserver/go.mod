@@ -3,13 +3,13 @@ module e2gserver
 go 1.17
 
 require (
-	filippo.io/age v1.0.0
 	github.com/gin-gonic/autotls v0.0.3
 	github.com/gin-gonic/gin v1.7.7
-	github.com/mrnakumar/e2g_utils v1.3.0
+	github.com/mrnakumar/e2g_utils v1.6.1
 )
 
 require (
+	filippo.io/age v1.0.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.13.0 // indirect
 	github.com/go-playground/universal-translator v0.17.0 // indirect

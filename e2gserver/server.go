@@ -14,7 +14,7 @@ import (
 func main() {
 	flags := pkg.ParseFlags()
 	route := gin.Default()
-	decoder, err := pkg.CreateDecoder(flags.IdentityFilePath)
+	decoder, err := e2g_utils.CreateDecoder(flags.IdentityFilePath)
 	if err != nil {
 		log.Fatalf("failed to create decoder. Reason: '%v'", err)
 	}

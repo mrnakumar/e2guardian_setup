@@ -9,7 +9,7 @@ import (
 const AuthError = "authError"
 
 type AuthChecker struct {
-	Decoder  Decoder
+	Decoder  e2g_utils.Decoder
 	UserName string
 	Password string
 }

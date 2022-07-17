@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/kbinani/screenshot"
+	"github.com/mrnakumar/e2g_utils"
 	"image/png"
 	"log"
 	"math/rand"
@@ -29,11 +30,11 @@ type screenShot struct {
 type ScreenShotMaker struct {
 	options   ScreenShotOptions
 	wg        *sync.WaitGroup
-	encryptor Encryptor
+	encryptor e2g_utils.Encryptor
 }
 
 func CreateScreenShotMaker(wg *sync.WaitGroup, options ScreenShotOptions) (ScreenShotMaker, error) {
-	encryptor, err := CreateEncryptor(options.ShotKeyPath)
+	encryptor, err := e2g_utils.CreateEncryptor(options.ShotKeyPath)
 	if err != nil {
 		return ScreenShotMaker{}, err
 	}
@@ -51,13 +52,13 @@ func (s ScreenShotMaker) Worker() {
 		return
 	}
 
-	encryptor, err := CreateEncryptor(s.options.ShotKeyPath)
+	encryptor, err := e2g_utils.CreateEncryptor(s.options.ShotKeyPath)
 	if err != nil {
 		log.Printf("failed to create encryptor for shot maker. Caused by : '%v'", err)
 		return
 	}
 	for {
-		size, err := Size(s.options.ShotsPath)
+		size, err := e2g_utils.Size(s.options.ShotsPath)
 		if err == nil && size < s.options.StorageLimit {
 			shots, err := takeScreenShot("screen")
 			if err != nil {
@@ -77,7 +78,7 @@ func (s ScreenShotMaker) Worker() {
 	}
 }
 
-func processShots(shots []screenShot, encryptor Encryptor, shotsPath string) {
+func processShots(shots []screenShot, encryptor e2g_utils.Encryptor, shotsPath string) {
 	for _, shot := range shots {
 		encrypted, err := encryptor.Encrypt(shot.Image)
 		if err == nil {
@@ -118,13 +119,13 @@ func takeScreenShot(NamePrefix string) ([]screenShot, error) {
 }
 
 func cleanOld(shotsPath string) {
-	files, err := ListFiles([]string{ScreenShotSuffix}, shotsPath)
+	files, err := e2g_utils.ListFiles([]string{ScreenShotSuffix}, shotsPath)
 	if err != nil {
 		log.Printf("failed to list files. Caused by '%s'", err)
 	} else {
 		for _, file := range files {
-			if time.Now().Sub(file.modTime) > 24*time.Hour {
-				err := os.Remove(file.path)
+			if time.Now().Sub(file.ModTime) > 24*time.Hour {
+				err := os.Remove(file.Path)
 				if err != nil {
 					log.Printf("failed to delete file. Caused by '%v'", err)
 				}
