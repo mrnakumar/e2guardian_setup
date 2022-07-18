@@ -4,3 +4,7 @@ blacklist
 venv
 .idea
 e2gserver/.DS_Store
+.DS_Store
+files
+main
+e2gserver/server

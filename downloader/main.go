@@ -2,8 +2,8 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"github.com/mrnakumar/downloader/downloader"
+	"log"
 )
 
 func main() {
@@ -18,7 +18,7 @@ func main() {
 		flag.PrintDefaults()
 		return
 	}
-	downloader, err := downloader.MakeDownloader(downloader.DownloaderOptions{
+	scDownloader, err := downloader.MakeDownloader(downloader.DownloaderOptions{
 		UserName:             *userName,
 		Password:             *password,
 		Url:                  *url,
@@ -27,11 +27,11 @@ func main() {
 		DownloadBaseFolder:   *downloadFolder,
 	})
 	if err != nil {
-		fmt.Printf("Failed to create downlader: %v", err)
+		log.Printf("Failed to create downlader: %v\n", err)
 		return
 	}
-	downloader.Download()
-	fmt.Printf("Finished downloading all available")
+	scDownloader.Download()
+	log.Println("Finished downloading all available")
 }
 
 func isEmpty(input *string) bool {

@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"time"
 )
 
 type Downloader struct {
@@ -46,6 +47,7 @@ func MakeDownloader(options DownloaderOptions) (Downloader, error) {
 		downloadBasePath: options.DownloadBaseFolder,
 		userName:         options.UserName,
 		password:         options.Password,
+		url:              options.Url,
 	}, nil
 }
 func (d Downloader) Download() {
@@ -55,7 +57,7 @@ func (d Downloader) Download() {
 		return
 	}
 	for {
-		req, err := http.NewRequest("GET", d.url, nil)
+		req, err := http.NewRequest("POST", d.url, nil)
 		if err != nil {
 			log.Println(err)
 		} else {
@@ -64,13 +66,24 @@ func (d Downloader) Download() {
 			if err != nil {
 				log.Println(err)
 			} else {
-				fmt.Println("Headers ", res.Header)
 				if res.StatusCode == http.StatusOK {
 					respBody, _ := ioutil.ReadAll(res.Body)
-					filePath := path.Join(d.downloadBasePath, "already")
-					err = os.WriteFile(filePath, respBody, 0644)
+					fileName := res.Header.Get("File-Name")
+					if fileName == "" {
+						fileName = time.Now().String()
+					}
+					fileName = fileName + ".png"
+					filePath := path.Join(d.downloadBasePath, fileName)
+					decrypted, err := d.bodyDecryptor.Decrypt(string(respBody))
 					if err != nil {
 						log.Println(err)
+						continue
+					}
+					err = os.WriteFile(filePath, decrypted, 0644)
+					if err != nil {
+						log.Println(err)
+					} else {
+						log.Printf("Downloaded file '%s'\n", filePath)
 					}
 					_ = res.Body.Close()
 				}

@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -46,7 +47,7 @@ func main() {
 	route.GET("/health", func(c *gin.Context) {
 		c.String(http.StatusOK, "Hi")
 	})
-	route.GET("/eat", authChecker.AuthCheck(), func(c *gin.Context) {
+	route.POST("/eat", authChecker.AuthCheck(), func(c *gin.Context) {
 		if _, failed := c.Get(pkg.AuthError); failed {
 			c.String(http.StatusUnauthorized, "")
 			return
@@ -58,6 +59,7 @@ func main() {
 		} else {
 			if len(files) > 0 {
 				file := files[0]
+				c.Header("File-Name", filepath.Base(file.Path))
 				c.File(file.Path)
 				err = os.Remove(file.Path)
 				if err != nil {
