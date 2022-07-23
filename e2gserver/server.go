@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/autotls"
 	"github.com/gin-gonic/gin"
 	"github.com/mrnakumar/e2g_utils"
+	"golang.org/x/crypto/acme/autocert"
 	"log"
 	"net/http"
 	"os"
@@ -73,6 +74,13 @@ func main() {
 	if flags.DevelopMode {
 		log.Fatal(route.Run("localhost:8080"))
 	} else {
-		log.Fatal(autotls.Run(route, flags.Domain))
+		//log.Fatal(autotls.Run(route, flags.Domain))
+		m := autocert.Manager{
+			Prompt:     autocert.AcceptTOS,
+			HostPolicy: autocert.HostWhitelist(flags.Domain),
+			Cache:      autocert.DirCache("/var/www/.cache"),
+		}
+
+		log.Fatal(autotls.RunWithManager(route, &m))
 	}
 }
